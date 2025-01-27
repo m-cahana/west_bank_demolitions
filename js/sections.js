@@ -25,15 +25,33 @@ d3.csv("data/raw/demolitions.csv").then((data) => {
 // functions
 // *******************
 
-function walkGenerator(totalSteps = 50, initialValue = 2, min = 0, max = 4) {
+function* walkGenerator(totalSteps = 50, initialValue = 2, min = 0, max = 4) {
   let v = initialValue;
   const data = [];
   for (let i = 0; i < totalSteps; ++i) {
     v += Math.random() - 0.5;
     v = Math.max(Math.min(v, max), min);
     data.push({ step: i, value: v });
+    yield [...data];
   }
-  return data;
+}
+
+function* walkGeneratorTwo(totalSteps = 100, initialValue = 2, stepBreak = 10) {
+  let v = initialValue;
+  let direction = 1; // 1 for up, -1 for down
+  let nBreaks = 10;
+  const data = [];
+  for (let i = 0; i < totalSteps; ++i) {
+    v += direction;
+    data.push({ step: v * 5, value: nBreaks });
+
+    if (v === stepBreak || v === 0) {
+      direction *= -1; // Change direction
+      nBreaks += 10;
+    }
+
+    yield [...data];
+  }
 }
 
 // draw each visual initially, then hide most of them
@@ -51,7 +69,7 @@ function drawInitial() {
     return acc;
   }, {});
 
-  const walk = walkGenerator();
+  const walk = walkGeneratorTwo();
 
   console.log(walk);
 
@@ -69,15 +87,47 @@ function drawInitial() {
 
   const walkY = d3
     .scaleLinear()
-    .domain([0, 4])
+    .domain([0, 100])
     .range([ADJ_HEIGHT - MARGIN.BOTTOM, MARGIN.TOP]);
 
   const line = d3
     .line()
     .x((d) => walkX(d.step))
-    .y((d) => walkY(d.value));
+    .y((d) => walkY(d.value))
+    .curve(d3.curveMonotoneX);
 
   svg.append("path").attr("d", line(walk)).attr("stroke", "black");
+
+  const path = svg.select("path");
+
+  const pathLength = path.node().getTotalLength();
+
+  const transitionPath = d3.transition().ease(d3.easeSin).duration(2500);
+
+  path
+    .attr("stroke-dashoffset", pathLength)
+    .attr("stroke-dasharray", pathLength)
+    .transition(transitionPath)
+    .attr("stroke-dashoffset", 0);
+
+  const generator = walkGeneratorTwo();
+  let data = [];
+
+  function animate() {
+    const result = generator.next();
+    if (!result.done) {
+      data = result.value;
+
+      console.log(result.value);
+
+      // Update Line
+      path.datum(data).transition().duration(500).attr("d", line);
+
+      // Continue Animation
+      setTimeout(animate, 50);
+    }
+  }
+  animate();
 }
 
 // *******************
