@@ -36,17 +36,20 @@ function* walkGenerator(totalSteps = 50, initialValue = 2, min = 0, max = 4) {
   }
 }
 
-function* walkGeneratorTwo(totalSteps = 100, initialValue = 2, stepBreak = 10) {
+function* walkGeneratorTwo(totalSteps = 100, initialValue = 0, stepBreak = 10) {
   let v = initialValue;
   let direction = 1; // 1 for up, -1 for down
   let nBreaks = 10;
   const data = [];
   for (let i = 0; i < totalSteps; ++i) {
+    console.log(v, v * 5, nBreaks);
     v += direction;
     data.push({ step: v * 5, value: nBreaks });
 
     if (v === stepBreak || v === 0) {
       direction *= -1; // Change direction
+    }
+    if ((v === 1 && direction === -1) || (v === 9 && direction === 1)) {
       nBreaks += 10;
     }
 
@@ -94,9 +97,14 @@ function drawInitial() {
     .line()
     .x((d) => walkX(d.step))
     .y((d) => walkY(d.value))
-    .curve(d3.curveMonotoneX);
+    .curve(d3.curveBumpY);
 
-  svg.append("path").attr("d", line(walk)).attr("stroke", "black");
+  svg
+    .append("path")
+    .attr("d", line(walk))
+    .attr("stroke", "black")
+    .attr("fill", "none")
+    .attr("stroke-width", 2);
 
   const path = svg.select("path");
 
@@ -118,10 +126,8 @@ function drawInitial() {
     if (!result.done) {
       data = result.value;
 
-      console.log(result.value);
-
       // Update Line
-      path.datum(data).transition().duration(500).attr("d", line);
+      path.datum(data).transition().duration(10).attr("d", line);
 
       // Continue Animation
       setTimeout(animate, 50);
