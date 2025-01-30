@@ -3,7 +3,7 @@ let svg;
 let DOT_ADJUSTMENT_FACTOR = 1;
 let ADJ_WIDTH, ADJ_HEIGHT;
 let walkX, walkY, line, lineGroup;
-let palestinianPermits;
+let palestinianPermits, palestinianDemolitions;
 
 let CORE_MARGIN = { LEFT: 150, RIGHT: 100, TOP: 50, BOTTOM: 20 };
 let CORE_XY_DOMAIN = { START: 0, END: 100 };
@@ -14,14 +14,12 @@ let HEIGHT_WIDTH_RATIO = HEIGHT / WIDTH;
 let CORE_Y_START = 100;
 let STEP_CONFIG = {
   LENGTH: 1,
-  Y_CHANGE: 4,
+  Y_CHANGE: 5,
   Y_START: CORE_Y_START,
   get STEPS_UNTIL_TURN() {
     return 100 / this.LENGTH;
   },
 };
-
-const SVG_HEIGHT_INCREMENT = 500;
 
 import { scroller } from "./scroller.js";
 
@@ -29,15 +27,39 @@ import { scroller } from "./scroller.js";
 // read data
 // *******************
 
+// permits
 d3.csv("data/raw/palestinian_permits.csv").then((data) => {
   data.forEach((d) => {
     d.year = Number(d.year);
+    // 1 permit buffer to handle 1-permit length entries
+    // FIX later
     d.permits = Number(d.permits) + 1;
   });
 
   palestinianPermits = data;
 
   setTimeout(drawInitial, 100);
+});
+
+// demolitions
+d3.csv("data/raw/demolitions.csv").then((data) => {
+  // Convert column names to lowercase with underscores
+  const columns = data.columns.map((col) =>
+    col.toLowerCase().replace(/\s+/g, "_")
+  );
+
+  data.forEach((d) => {
+    columns.forEach((col, i) => {
+      d[col] = d[data.columns[i]];
+      delete d[data.columns[i]];
+    });
+    d.housing_units = Number(d.housing_units);
+    d.minors_left_homeless = Number(d.minors_left_homeless);
+    d.people_left_homeless = Number(d.people_left_homeless);
+  });
+
+  palestinianDemolitions = data;
+  console.log(palestinianDemolitions);
 });
 
 // *******************
@@ -83,7 +105,7 @@ class AnimatedLine {
    * @param {d3.line} lineGenerator - D3 line generator function.
    * @param {string} labelText - Optional text to display at the start of the line.
    * @param {number} animationSpeed - Optional animation speed in ms.
-   * @param {function} onExceed - Function to call when the line exceeds the bounds.
+
    */
   constructor(
     lineGroup,
@@ -92,8 +114,7 @@ class AnimatedLine {
     generatorParams,
     lineGenerator,
     labelText = null,
-    animationSpeed = 25,
-    onExceed = null
+    animationSpeed = 25
   ) {
     this.data = [];
     this.generatorData = duBoisLine(...generatorParams); // Now an array
@@ -103,12 +124,12 @@ class AnimatedLine {
       .attr("class", className)
       .attr("stroke", color)
       .attr("fill", "none")
-      .attr("stroke-width", 2);
+      .attr("stroke-width", 5);
     this.lineGenerator = lineGenerator;
 
     this.labelText = labelText;
     this.animationSpeed = animationSpeed;
-    this.onExceed = onExceed;
+
     this.text = null; // Placeholder for the text element
 
     // Initialize with the first point if labelText is provided
@@ -118,16 +139,12 @@ class AnimatedLine {
       this.path.datum(this.data).attr("d", this.lineGenerator(this.data));
       this.currentIndex++;
 
-      // Calculate the position using walkX and walkY scales
-      const x = walkX(firstPoint.step);
-      const y = walkY(firstPoint.value);
-
       // Append the text element at the starting point
       this.text = lineGroup
         .append("text")
         .attr("class", "dubois-label")
-        .attr("x", x)
-        .attr("y", y)
+        .attr("x", walkX(-6))
+        .attr("y", walkY(firstPoint.value - 1.5))
         .attr("dy", "-0.5em") // Adjust vertical position (above the point)
         .attr("fill", color) // Match the line color or choose another
         .text(this.labelText);
@@ -144,24 +161,7 @@ class AnimatedLine {
       this.data.push(point);
       this.path.datum(this.data).attr("d", this.lineGenerator(this.data));
 
-      // Check if the next point exceeds the SVG bounds
-      const x = walkX(point.step);
-      const y = walkY(point.value);
-
-      const isExceeding =
-        x < MARGIN.LEFT ||
-        x > ADJ_WIDTH - MARGIN.RIGHT ||
-        y < MARGIN.TOP ||
-        y > ADJ_HEIGHT - MARGIN.BOTTOM;
-
-      if (isExceeding && this.onExceed) {
-        this.onExceed(); // Trigger the zoom-out
-      }
-
       setTimeout(() => this.animate(), this.animationSpeed);
-    } else {
-      console.log(`Animation complete for ${this.path.attr("class")}`);
-      // Optionally, handle post-animation tasks here
     }
   }
 
@@ -172,29 +172,6 @@ class AnimatedLine {
   getData() {
     return this.data;
   }
-}
-// Define the zoom-out function to scale only the y-axis
-function triggerZoomOut(zoomFactor = 2) {
-  // Calculate the center of the SVG
-  const centerX = ADJ_WIDTH / zoomFactor;
-  const centerY = ADJ_HEIGHT / zoomFactor;
-
-  // Select the group containing the lines and apply the y-axis scaling
-  svg
-    .select(".permit-lines")
-    .transition()
-    .duration(2000) // Duration of the zoom-out in milliseconds
-    .ease(d3.easeCubicOut) // Easing function for smoothness
-    .attr(
-      "transform",
-      `translate(${centerX}, ${centerY}) scale(1, ${
-        1 / zoomFactor
-      }) translate(${-centerX}, ${-centerY})`
-    )
-    .on("end", () => {
-      console.log("Zoom-out complete");
-      // Optionally, you can add more transitions or interactions here
-    });
 }
 
 // *******************
@@ -262,7 +239,7 @@ function drawInitial() {
     new AnimatedLine(
       lineGroup,
       `palestinian-${d.year}-line-path`,
-      "green",
+      "black",
       [
         d.permits,
         STEP_CONFIG.LENGTH,
@@ -283,111 +260,89 @@ function drawInitial() {
       STEP_CONFIG.Y_START -= STEP_CONFIG.Y_CHANGE;
     }
   });
-
-  // const animatedLine1 = new AnimatedLine(
-  //   lineGroup,
-  //   "initial-line-path",
-  //   "black",
-  //   [25, STEP_CONFIG.LENGTH, STEP_CONFIG.Y_START, STEP_CONFIG.Y_CHANGE, false], // generatorParams: totalSteps, stepLength, initialY, yChange, Increment
-  //   line,
-  //   "2023",
-  //   () => {
-  //     Callback to initialize animatedLine2 after animatedLine1 completes
-  //     const animatedLine2 = new AnimatedLine(
-  //       lineGroup,
-  //       "second-line-path",
-  //       "blue",
-  //       [25, STEP_CONFIG.LENGTH, 70, STEP_CONFIG.Y_CHANGE, false], // Adjust generatorParams for second line
-  //       line,
-  //       "2024"
-  //     );
-  //   }
-  // );
-
-  // Define the zoom-out function
-  function triggerZoomOut() {
-    // Calculate the center of the SVG
-    const centerX = ADJ_WIDTH / 2;
-    const centerY = ADJ_HEIGHT / 2;
-
-    // Select the group containing the line
-    lineGroup
-      .transition()
-      .duration(2000) // Duration of the zoom-out in milliseconds
-      .ease(d3.easeCubicOut) // Easing function for smoothness
-      .attr(
-        "transform",
-        `translate(${centerX}, ${centerY}) scale(0.5) translate(${-centerX}, ${-centerY})`
-      )
-      .on("end", () => {
-        console.log("Zoom-out complete");
-        // Optionally, you can add more transitions or interactions here
-      });
-  }
 }
 
 function consolidatePalestinianLines() {
-  STEP_CONFIG.Y_START = CORE_Y_START;
+  return new Promise((resolve, reject) => {
+    STEP_CONFIG.Y_START = CORE_Y_START;
 
-  const conslidatedPermits = palestinianPermits.reduce(
-    (sum, d) => sum + d.permits,
-    0
-  );
+    const consolidatedPermits = palestinianPermits.reduce(
+      (sum, d) => sum + d.permits,
+      0
+    );
 
-  const consolidatedPathData = duBoisLine(
-    ...[
-      conslidatedPermits,
+    console.log(consolidatedPermits);
+
+    const consolidatedPathData = duBoisLine(
+      consolidatedPermits,
       STEP_CONFIG.LENGTH,
       STEP_CONFIG.Y_START,
       STEP_CONFIG.Y_CHANGE,
       false,
-      STEP_CONFIG.STEPS_UNTIL_TURN,
-    ]
-  );
+      STEP_CONFIG.STEPS_UNTIL_TURN
+    );
 
-  let index_counter = 0;
+    let index_counter = 0;
+    let transitionsCompleted = 0;
+    const totalTransitions = palestinianPermits.length;
 
-  palestinianPermits.forEach((d) => {
+    if (totalTransitions === 0) {
+      // No transitions to perform, resolve immediately
+      resolve();
+      return;
+    }
+
+    // Remove prior labels
+    svg.selectAll("text").remove();
+
+    // Grab year info
+    const years = palestinianPermits.map((d) => d.year);
+    const yearStart = d3.min(years);
+    const yearEnd = d3.max(years);
+
+    // Append a new consolidated label
     svg
-      .select(`.palestinian-${d.year}-line-path`)
-      .transition()
-      .duration(1000) // duration in milliseconds
-      .attr(
-        "d",
-        line(
-          consolidatedPathData.slice(index_counter, index_counter + d.permits)
+      .append("text")
+      .attr("class", "dubois-label")
+      .attr("x", walkX(-6))
+      .attr("y", walkY(consolidatedPathData[0].value - 1.5))
+      .attr("dy", "-0.5em") // Adjust vertical position (above the point)
+      .attr("fill", "black")
+      .text(`${yearStart} - ${yearEnd}`);
+
+    palestinianPermits.forEach((d) => {
+      svg
+        .select(`.palestinian-${d.year}-line-path`)
+        .transition()
+        .duration(1000) // duration in milliseconds
+        .attr(
+          "d",
+          line(
+            consolidatedPathData.slice(index_counter, index_counter + d.permits)
+          )
         )
-      );
+        .on("end", () => {
+          transitionsCompleted++;
+          if (transitionsCompleted === totalTransitions) {
+            // All transitions complete
 
-    index_counter += d.permits - 1;
+            if (consolidatedPermits > STEP_CONFIG.STEPS_UNTIL_TURN) {
+              STEP_CONFIG.Y_START -=
+                Math.floor(consolidatedPermits / STEP_CONFIG.STEPS_UNTIL_TURN) *
+                  STEP_CONFIG.Y_CHANGE +
+                STEP_CONFIG.Y_CHANGE;
+            } else {
+              STEP_CONFIG.Y_START -= STEP_CONFIG.Y_CHANGE;
+            }
+
+            // Resolve the promise after all transitions are done
+            resolve();
+          }
+        });
+
+      index_counter += d.permits - 1;
+    });
   });
-
-  // remove prior labels
-  svg.selectAll("text").remove();
-
-  // grab year info
-  const years = palestinianPermits.map((d) => d.year);
-  const yearStart = d3.min(years);
-  const yearEnd = d3.max(years);
-
-  // append a new consolidated label
-  svg
-    .append("text")
-    .attr("class", "dubois-label")
-    .attr("x", walkX(consolidatedPathData[0].step))
-    .attr("y", walkY(consolidatedPathData[0].value))
-    .attr("dy", "-0.5em") // Adjust vertical position (above the point)
-    .attr("fill", "black")
-    .text(`${yearStart} - ${yearEnd}`);
-
-  if (conslidatedPermits > STEP_CONFIG.STEPS_UNTIL_TURN) {
-    STEP_CONFIG.Y_START -=
-      Math.floor(conslidatedPermits / STEP_CONFIG.STEPS_UNTIL_TURN) *
-        STEP_CONFIG.Y_CHANGE +
-      STEP_CONFIG.Y_CHANGE;
-  } else {
-    STEP_CONFIG.Y_START -= STEP_CONFIG.Y_CHANGE;
-  }
 }
 
 function unconsolidatePalestinianLines() {
@@ -418,8 +373,8 @@ function unconsolidatePalestinianLines() {
     svg
       .append("text")
       .attr("class", "dubois-label")
-      .attr("x", walkX(pathData[0].step))
-      .attr("y", walkY(pathData[0].value))
+      .attr("x", walkX(-6))
+      .attr("y", walkY(pathData[0].value - 1.5))
       .attr("dy", "-0.5em") // Adjust vertical position (above the point)
       .attr("fill", "black")
       .text(`${d.year}`);
@@ -435,21 +390,23 @@ function unconsolidatePalestinianLines() {
 }
 
 function drawIsraeliLines() {
+  const yearlyIsraeliPermits = 2000;
+  const speedImprovementFactor = 2; // 2x faster than default wit
   const israeliLine = new AnimatedLine(
     lineGroup,
     `israeli-line-path`,
     "blue",
     [
-      2000,
-      STEP_CONFIG.LENGTH,
+      yearlyIsraeliPermits / speedImprovementFactor,
+      STEP_CONFIG.LENGTH * speedImprovementFactor,
       STEP_CONFIG.Y_START,
       STEP_CONFIG.Y_CHANGE,
       false,
-      STEP_CONFIG.STEPS_UNTIL_TURN,
+      STEP_CONFIG.STEPS_UNTIL_TURN / speedImprovementFactor,
     ], // generatorParams: totalSteps, stepLength, initialY, yChange, Increment
     line,
-    "2024",
-    1
+    "2024 alone",
+    0
   );
 
   console.log(Math.floor(2000 / STEP_CONFIG.STEPS_UNTIL_TURN));
@@ -467,12 +424,13 @@ function removeIsraeliLines() {
 // array of all visual functions
 // to be called by the scroller functionality
 let activationFunctions = [
-  unconsolidatePalestinianLines,
   () => {
+    unconsolidatePalestinianLines();
     removeIsraeliLines();
-    consolidatePalestinianLines();
   },
-  drawIsraeliLines,
+  () => {
+    consolidatePalestinianLines().then(drawIsraeliLines);
+  },
   () => {},
 ];
 
