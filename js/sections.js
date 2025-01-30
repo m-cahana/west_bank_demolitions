@@ -5,12 +5,17 @@ let ADJ_WIDTH, ADJ_HEIGHT;
 let walkX, walkY, line, lineGroup;
 let palestinianPermits, palestinianDemolitions;
 
+let simulation, nodes;
+
 let CORE_MARGIN = { LEFT: 150, RIGHT: 100, TOP: 50, BOTTOM: 20 };
 let CORE_XY_DOMAIN = { START: 0, END: 100 };
 let MARGIN = { LEFT: 150, RIGHT: 100, TOP: 50, BOTTOM: 20 };
 let WIDTH = 800;
 let HEIGHT = 500;
 let HEIGHT_WIDTH_RATIO = HEIGHT / WIDTH;
+
+const DOT = { RADIUS: 5, OPACITY: 0.5 };
+
 let CORE_Y_START = 100;
 let STEP_CONFIG = {
   LENGTH: 1,
@@ -172,6 +177,14 @@ class AnimatedLine {
   getData() {
     return this.data;
   }
+}
+
+// *******************
+// other helper functions
+// *******************
+
+function getRandomNumberBetween(start, end) {
+  return Math.random() * (end - start + 1) + start;
 }
 
 // *******************
@@ -417,6 +430,102 @@ function removeIsraeliLines() {
   svg.selectAll(".israeli-line-path").remove();
 }
 
+function removePalestinianLines() {
+  palestinianPermits.forEach((d) => {
+    svg.select(`.palestinian-${d.year}-line-path`).remove();
+  });
+}
+
+function initiateDemolitionNodes() {
+  // instantiate the force simulation
+  simulation = d3.forceSimulation(palestinianDemolitions);
+
+  // append a div element for the tooltip (hidden by default)
+  const tooltip = d3.select("body").append("div").attr("class", "tooltip");
+
+  // create nodes
+  nodes = svg
+    .selectAll("circle")
+    .data(palestinianDemolitions)
+    .enter()
+    .append("circle")
+    .attr("class", "nodes")
+    .attr("cx", function (d) {
+      return walkX(
+        getRandomNumberBetween(CORE_XY_DOMAIN.START, CORE_XY_DOMAIN.END)
+      );
+    })
+    .attr("cy", function (d) {
+      return walkY(
+        getRandomNumberBetween(CORE_XY_DOMAIN.START, CORE_XY_DOMAIN.END)
+      );
+    })
+    .attr("r", DOT.RADIUS)
+    .attr("opacity", DOT.OPACITY)
+    .on("mouseover", function (event, d) {
+      if (d3.select(this).attr("opacity") > 0) {
+        // show the tooltip
+        tooltip
+          .html(
+            `<strong>Housing units:</strong> ${d.housing_units}<br>
+            <strong>District:</strong> ${d.district}
+            <br>
+            <strong>Locality:</strong> ${d.locality}
+            `
+          )
+          .style("left", `${event.pageX + 10}px`) // position tooltip near the mouse
+          .style("top", `${event.pageY + 10}px`)
+          .classed("visible", true);
+
+        // highlight the node
+        d3.select(this).classed("highlighted", true);
+      }
+    })
+    .on("mousemove", function (event) {
+      // update tooltip position as the mouse moves
+      tooltip
+        .style("left", `${event.pageX + 10}px`)
+        .style("top", `${event.pageY + 10}px`);
+    })
+    .on("mouseout", function () {
+      // hide the tooltip when mouse moves away
+      tooltip.classed("visible", false);
+
+      // remove highlight
+      d3.select(this).classed("highlighted", false);
+    });
+
+  // define each tick of simulation
+  simulation
+    .on("tick", () => {
+      nodes.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+    })
+    // define forces
+    .force(
+      "forceX",
+      d3
+        .forceX((d) =>
+          walkX(
+            getRandomNumberBetween(CORE_XY_DOMAIN.START, CORE_XY_DOMAIN.END)
+          )
+        )
+        .strength(0.075)
+    )
+    .force(
+      "forceY",
+      d3
+        .forceY((d) =>
+          walkY(
+            getRandomNumberBetween(CORE_XY_DOMAIN.START, CORE_XY_DOMAIN.END)
+          )
+        )
+        .strength(0.075)
+    )
+    .force("collide", d3.forceCollide().radius(DOT.RADIUS).strength(0.7));
+
+  simulation.alpha(0.75).restart();
+}
+
 // *******************
 // scroll
 // *******************
@@ -428,10 +537,15 @@ let activationFunctions = [
     unconsolidatePalestinianLines();
     removeIsraeliLines();
   },
+  () => {},
   () => {
     consolidatePalestinianLines().then(drawIsraeliLines);
   },
-  () => {},
+  () => {
+    removeIsraeliLines();
+    removePalestinianLines();
+    initiateDemolitionNodes();
+  },
 ];
 
 // scroll
