@@ -15,6 +15,7 @@ let HEIGHT = 500;
 let HEIGHT_WIDTH_RATIO = HEIGHT / WIDTH;
 
 const DOT = { RADIUS: 5, OPACITY: 0.5 };
+const RECT = { WIDTH: 5, HEIGHT: 5, OPACITY: 0.5 };
 
 let CORE_Y_START = 100;
 let STEP_CONFIG = {
@@ -437,70 +438,81 @@ function removePalestinianLines() {
 }
 
 function initiateDemolitionNodes() {
-  // instantiate the force simulation
+  // Instantiate the force simulation
   simulation = d3.forceSimulation(palestinianDemolitions);
 
-  // append a div element for the tooltip (hidden by default)
+  // Append a div element for the tooltip (hidden by default)
   const tooltip = d3.select("body").append("div").attr("class", "tooltip");
 
-  // create nodes
+  // Define rectangle size
+  const RECT_SIZE = RECT.WIDTH; // Assuming RECT.WIDTH === RECT.HEIGHT
+
+  // Create nodes as rectangles
   nodes = svg
-    .selectAll("circle")
+    .selectAll("rect.nodes") // Use a more specific selector to prevent duplicates
     .data(palestinianDemolitions)
     .enter()
-    .append("circle")
+    .append("rect")
     .attr("class", "nodes")
-    .attr("cx", function (d) {
-      return walkX(
-        getRandomNumberBetween(CORE_XY_DOMAIN.START, CORE_XY_DOMAIN.END)
-      );
+    .attr("x", function (d) {
+      return (
+        walkX(
+          getRandomNumberBetween(CORE_XY_DOMAIN.START, CORE_XY_DOMAIN.END)
+        ) -
+        RECT_SIZE / 2
+      ); // Center the rectangle
     })
-    .attr("cy", function (d) {
-      return walkY(
-        getRandomNumberBetween(CORE_XY_DOMAIN.START, CORE_XY_DOMAIN.END)
-      );
+    .attr("y", function (d) {
+      return (
+        walkY(
+          getRandomNumberBetween(CORE_XY_DOMAIN.START, CORE_XY_DOMAIN.END)
+        ) -
+        RECT_SIZE / 2
+      ); // Center the rectangle
     })
-    .attr("r", DOT.RADIUS)
-    .attr("opacity", DOT.OPACITY)
+    .attr("width", RECT.WIDTH)
+    .attr("height", RECT.HEIGHT)
+    .attr("fill", "steelblue") // Set a visible fill color
+    .attr("opacity", RECT.OPACITY)
     .on("mouseover", function (event, d) {
       if (d3.select(this).attr("opacity") > 0) {
-        // show the tooltip
+        // Show the tooltip
         tooltip
           .html(
             `<strong>Housing units:</strong> ${d.housing_units}<br>
-            <strong>District:</strong> ${d.district}
-            <br>
-            <strong>Locality:</strong> ${d.locality}
-            `
+            <strong>District:</strong> ${d.district}<br>
+            <strong>Locality:</strong> ${d.locality}`
           )
-          .style("left", `${event.pageX + 10}px`) // position tooltip near the mouse
+          .style("left", `${event.pageX + 10}px`) // Position tooltip near the mouse
           .style("top", `${event.pageY + 10}px`)
           .classed("visible", true);
 
-        // highlight the node
+        // Highlight the node
         d3.select(this).classed("highlighted", true);
       }
     })
     .on("mousemove", function (event) {
-      // update tooltip position as the mouse moves
+      // Update tooltip position as the mouse moves
       tooltip
         .style("left", `${event.pageX + 10}px`)
         .style("top", `${event.pageY + 10}px`);
     })
     .on("mouseout", function () {
-      // hide the tooltip when mouse moves away
+      // Hide the tooltip when mouse moves away
       tooltip.classed("visible", false);
 
-      // remove highlight
+      // Remove highlight
       d3.select(this).classed("highlighted", false);
     });
 
-  // define each tick of simulation
+  // Define each tick of simulation
   simulation
     .on("tick", () => {
-      nodes.attr("cx", (d) => d.x).attr("cy", (d) => d.y);
+      nodes
+        .attr("x", (d) => d.x - RECT_SIZE / 2) // Center the rectangle
+        .attr("y", (d) => d.y - RECT_SIZE / 2);
     })
-    // define forces
+    // Define forces
     .force(
       "forceX",
       d3
@@ -521,7 +533,15 @@ function initiateDemolitionNodes() {
         )
         .strength(0.075)
     )
-    .force("collide", d3.forceCollide().radius(DOT.RADIUS).strength(0.7));
+    .force(
+      "collide",
+      d3
+        .forceCollide()
+        .radius(RECT.WIDTH / 2)
+        .strength(0.7) // Adjusted collision radius
+    );
+
+  console.log(nodes);
 
   simulation.alpha(0.75).restart();
 }

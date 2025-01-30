@@ -256,12 +256,12 @@ strong {
 
 .nodes {
   stroke: none;
-  fill: var(--primary-blue);
+  fill: black;
   transition: stroke 0.1s ease, stroke-width 0.1s ease;
 }
 
 .nodes.highlighted {
-  stroke: var(--secondary-blue);
+  stroke: black;
   stroke-width: 8;
 }
 
