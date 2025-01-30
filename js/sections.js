@@ -30,15 +30,14 @@ let STEP_CONFIG = {
 import { scroller } from "./scroller.js";
 
 // *******************
-// read data
+// Read Data
 // *******************
 
-// permits
+// Permits
 d3.csv("data/raw/palestinian_permits.csv").then((data) => {
   data.forEach((d) => {
     d.year = Number(d.year);
     // 1 permit buffer to handle 1-permit length entries
-    // FIX later
     d.permits = Number(d.permits) + 1;
   });
 
@@ -47,7 +46,7 @@ d3.csv("data/raw/palestinian_permits.csv").then((data) => {
   setTimeout(drawInitial, 100);
 });
 
-// demolitions
+// Demolitions
 d3.csv("data/raw/demolitions.csv").then((data) => {
   // Convert column names to lowercase with underscores
   const columns = data.columns.map((col) =>
@@ -62,6 +61,8 @@ d3.csv("data/raw/demolitions.csv").then((data) => {
     d.housing_units = Number(d.housing_units);
     d.minors_left_homeless = Number(d.minors_left_homeless);
     d.people_left_homeless = Number(d.people_left_homeless);
+    d.crossed = false;
+    d.skipOpacityChange = Math.random() < 0.01; // 5% chance to skip opacity change
   });
 
   palestinianDemolitions = data;
@@ -69,7 +70,7 @@ d3.csv("data/raw/demolitions.csv").then((data) => {
 });
 
 // *******************
-// line functions and classes
+// Line Functions and Classes
 // *******************
 
 function duBoisLine(
@@ -111,7 +112,7 @@ class AnimatedLine {
    * @param {d3.line} lineGenerator - D3 line generator function.
    * @param {string} labelText - Optional text to display at the start of the line.
    * @param {number} animationSpeed - Optional animation speed in ms.
-
+   *
    */
   constructor(
     lineGroup,
@@ -120,7 +121,7 @@ class AnimatedLine {
     generatorParams,
     lineGenerator,
     labelText = null,
-    animationSpeed = 25
+    animationSpeed = 5
   ) {
     this.data = [];
     this.generatorData = duBoisLine(...generatorParams); // Now an array
@@ -181,7 +182,7 @@ class AnimatedLine {
 }
 
 // *******************
-// other helper functions
+// Other Helper Functions
 // *******************
 
 function getRandomNumberBetween(start, end) {
@@ -189,8 +190,11 @@ function getRandomNumberBetween(start, end) {
 }
 
 // *******************
-// activation functions
+// Activation Functions
 // *******************
+
+// Initialize tooltip once
+const tooltip = d3.select("body").append("div").attr("class", "tooltip");
 
 function drawInitial() {
   const container = document.getElementById("vis");
@@ -278,6 +282,10 @@ function drawInitial() {
 
 function consolidatePalestinianLines() {
   return new Promise((resolve, reject) => {
+    palestinianPermits.forEach((d) => {
+      svg.select(`.palestinian-${d.year}-line-path`).attr("display", "block");
+    });
+
     STEP_CONFIG.Y_START = CORE_Y_START;
 
     const consolidatedPermits = palestinianPermits.reduce(
@@ -362,7 +370,7 @@ function consolidatePalestinianLines() {
 function unconsolidatePalestinianLines() {
   STEP_CONFIG.Y_START = CORE_Y_START;
 
-  // remove prior labels
+  // Remove prior labels
   svg.selectAll("text").remove();
 
   palestinianPermits.forEach((d) => {
@@ -383,7 +391,7 @@ function unconsolidatePalestinianLines() {
       .duration(1000) // duration in milliseconds
       .attr("d", line(pathData));
 
-    // append new individual label
+    // Append new individual label
     svg
       .append("text")
       .attr("class", "dubois-label")
@@ -405,11 +413,11 @@ function unconsolidatePalestinianLines() {
 
 function drawIsraeliLines() {
   const yearlyIsraeliPermits = 2000;
-  const speedImprovementFactor = 2; // 2x faster than default wit
+  const speedImprovementFactor = 2; // 2x faster than default
   const israeliLine = new AnimatedLine(
     lineGroup,
     `israeli-line-path`,
-    "blue",
+    "black",
     [
       yearlyIsraeliPermits / speedImprovementFactor,
       STEP_CONFIG.LENGTH * speedImprovementFactor,
@@ -427,57 +435,81 @@ function drawIsraeliLines() {
   console.log(israeliLine.getData());
 }
 
-function removeIsraeliLines() {
-  svg.selectAll(".israeli-line-path").remove();
+function hideIsraeliLines() {
+  svg.selectAll(".israeli-line-path").attr("display", "none");
+  svg.selectAll(".dubois-label").attr("display", "none");
 }
 
-function removePalestinianLines() {
+function hidePalestinianLines() {
   palestinianPermits.forEach((d) => {
-    svg.select(`.palestinian-${d.year}-line-path`).remove();
+    svg.select(`.palestinian-${d.year}-line-path`).attr("display", "none");
   });
+  svg.selectAll(".dubois-label").attr("display", "none");
 }
 
 function initiateDemolitionNodes() {
-  // Instantiate the force simulation
+  // **1. Remove existing nodes**
+  svg.selectAll("rect.nodes").remove();
+
+  // **2. Stop existing simulation if any**
+  if (simulation) {
+    simulation.stop();
+  }
+
+  // **3. Instantiate a new force simulation**
   simulation = d3.forceSimulation(palestinianDemolitions);
 
-  // Append a div element for the tooltip (hidden by default)
-  const tooltip = d3.select("body").append("div").attr("class", "tooltip");
+  // **4. Ensure a single tooltip instance**
+  let existingTooltip = d3.select(".tooltip");
+  let tooltipInstance;
+  if (existingTooltip.empty()) {
+    tooltipInstance = d3.select("body").append("div").attr("class", "tooltip");
+  } else {
+    tooltipInstance = existingTooltip;
+  }
 
-  // Define rectangle size
+  // **5. Define rectangle size**
   const RECT_SIZE = RECT.WIDTH; // Assuming RECT.WIDTH === RECT.HEIGHT
 
-  // Create nodes as rectangles
+  // **6. Create nodes as rectangles**
   nodes = svg
     .selectAll("rect.nodes") // Use a more specific selector to prevent duplicates
     .data(palestinianDemolitions)
     .enter()
     .append("rect")
     .attr("class", "nodes")
-    .attr("x", function (d) {
-      return (
+    .attr(
+      "x",
+      (d) =>
         walkX(
-          getRandomNumberBetween(CORE_XY_DOMAIN.START, CORE_XY_DOMAIN.END)
+          getRandomNumberBetween(
+            (CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8,
+            ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
+          )
         ) -
         RECT_SIZE / 2
-      ); // Center the rectangle
-    })
-    .attr("y", function (d) {
-      return (
+    ) // Center the rectangle
+    .attr(
+      "y",
+      (d) =>
         walkY(
-          getRandomNumberBetween(CORE_XY_DOMAIN.START, CORE_XY_DOMAIN.END)
+          getRandomNumberBetween(
+            getRandomNumberBetween(
+              (CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8,
+              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
+            )
+          )
         ) -
         RECT_SIZE / 2
-      ); // Center the rectangle
-    })
-    .attr("width", RECT.WIDTH)
-    .attr("height", RECT.HEIGHT)
+    ) // Center the rectangle
+    .attr("width", (d) => d.housing_units ** (1 / 2) * RECT.WIDTH)
+    .attr("height", (d) => d.housing_units ** (1 / 2) * RECT.HEIGHT)
     .attr("fill", "steelblue") // Set a visible fill color
     .attr("opacity", RECT.OPACITY)
     .on("mouseover", function (event, d) {
       if (d3.select(this).attr("opacity") > 0) {
         // Show the tooltip
-        tooltip
+        tooltipInstance
           .html(
             `<strong>Housing units:</strong> ${d.housing_units}<br>
             <strong>District:</strong> ${d.district}<br>
@@ -493,32 +525,35 @@ function initiateDemolitionNodes() {
     })
     .on("mousemove", function (event) {
       // Update tooltip position as the mouse moves
-      tooltip
+      tooltipInstance
         .style("left", `${event.pageX + 10}px`)
         .style("top", `${event.pageY + 10}px`);
     })
     .on("mouseout", function () {
       // Hide the tooltip when mouse moves away
-      tooltip.classed("visible", false);
+      tooltipInstance.classed("visible", false);
 
       // Remove highlight
       d3.select(this).classed("highlighted", false);
     });
 
-  // Define each tick of simulation
+  // **7. Define each tick of simulation**
   simulation
     .on("tick", () => {
       nodes
         .attr("x", (d) => d.x - RECT_SIZE / 2) // Center the rectangle
         .attr("y", (d) => d.y - RECT_SIZE / 2);
     })
-    // Define forces
+    // **8. Define forces**
     .force(
       "forceX",
       d3
         .forceX((d) =>
           walkX(
-            getRandomNumberBetween(CORE_XY_DOMAIN.START, CORE_XY_DOMAIN.END)
+            getRandomNumberBetween(
+              (CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8,
+              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
+            )
           )
         )
         .strength(0.075)
@@ -528,47 +563,121 @@ function initiateDemolitionNodes() {
       d3
         .forceY((d) =>
           walkY(
-            getRandomNumberBetween(CORE_XY_DOMAIN.START, CORE_XY_DOMAIN.END)
+            getRandomNumberBetween(
+              (CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8,
+              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
+            )
           )
         )
         .strength(0.075)
     )
     .force(
       "collide",
-      d3
-        .forceCollide()
-        .radius(RECT.WIDTH / 2)
-        .strength(0.7) // Adjusted collision radius
+      d3.forceCollide().radius(2).strength(0.7) // Adjusted collision radius
     );
 
   console.log(nodes);
 
+  // **9. Restart the simulation**
   simulation.alpha(0.75).restart();
 }
 
+function showDemolitionNodes() {
+  svg.selectAll(".nodes").style("display", "block");
+}
+
+function hideDemolitionNodes() {
+  svg.selectAll(".nodes").style("display", "none");
+}
+
+function assignTargetPositions(
+  baseLeftX,
+  baseRightX,
+  BUFFER_LEFT = 2,
+  BUFFER_RIGHT = 20
+) {
+  palestinianDemolitions.forEach((d) => {
+    if (d.skipOpacityChange) {
+      // Left-moving node: randomize within [baseLeftX - BUFFER_X, baseLeftX + BUFFER_X]
+      d.targetX = walkX(
+        clamp(
+          baseLeftX + getRandomNumberBetween(-BUFFER_LEFT, BUFFER_LEFT),
+          0,
+          100
+        )
+      );
+    } else {
+      // Right-moving node: randomize within [baseRightX - BUFFER_X, baseRightX + BUFFER_X]
+      d.targetX = walkX(
+        clamp(
+          baseRightX + getRandomNumberBetween(-BUFFER_RIGHT, BUFFER_RIGHT),
+          0,
+          100
+        )
+      );
+    }
+  });
+}
+
+/**
+ * Clamps a number between a minimum and maximum value.
+ * @param {number} num - The number to clamp.
+ * @param {number} min - The minimum allowable value.
+ * @param {number} max - The maximum allowable value.
+ * @returns {number} - The clamped number.
+ */
+function clamp(num, min, max) {
+  return Math.max(min, Math.min(max, num));
+}
+
+/**
+ * Adds titled boxes above left and right node groups.
+ */
+function splitNodesLeftRight() {
+  // **1. Assign random target positions**
+  assignTargetPositions(10, 80);
+
+  // **2. Update the force simulation**
+  simulation
+    .force(
+      "forceX",
+      d3.forceX((d) => d.targetX).strength(0.2) // Increased strength for more decisive movement
+    )
+    .force(
+      "forceY",
+      d3.forceY((d) => walkY(getRandomNumberBetween(0, 100))).strength(0.2) // Spread vertically
+    )
+    .alpha(0.75) // Ensure the simulation restarts effectively
+    .restart();
+}
+
 // *******************
-// scroll
+// Scroll
 // *******************
 
-// array of all visual functions
-// to be called by the scroller functionality
+// Array of all visual functions
+// To be called by the scroller functionality
 let activationFunctions = [
   () => {
     unconsolidatePalestinianLines();
-    removeIsraeliLines();
+    hideIsraeliLines();
   },
   () => {},
   () => {
     consolidatePalestinianLines().then(drawIsraeliLines);
+    hideDemolitionNodes();
   },
   () => {
-    removeIsraeliLines();
-    removePalestinianLines();
+    hideIsraeliLines();
+    hidePalestinianLines();
     initiateDemolitionNodes();
+  },
+  () => {
+    splitNodesLeftRight();
   },
 ];
 
-// scroll
+// Initialize scroller
 let scroll = scroller().container(d3.select("#graphic"));
 scroll();
 let lastIndex,
@@ -585,5 +694,5 @@ scroll.on("active", function (index) {
   lastIndex = activeIndex;
 });
 
-// reload on top of page
+// Reload on top of page
 history.scrollRestoration = "manual";

@@ -256,7 +256,7 @@ strong {
 
 .nodes {
   stroke: none;
-  fill: black;
+  fill: rgba(204, 35, 35, 0.86);
   transition: stroke 0.1s ease, stroke-width 0.1s ease;
 }
 
