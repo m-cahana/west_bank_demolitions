@@ -7,3 +7,4 @@ pyvenv.cfg
 **/__pycache__/
 data/python/remaining_locations_to_fix.csv
 share/
+**/constants.py
