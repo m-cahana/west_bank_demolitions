@@ -66,7 +66,6 @@ d3.csv("data/raw/demolitions.csv").then((data) => {
   });
 
   palestinianDemolitions = data;
-  console.log(palestinianDemolitions);
 });
 
 // *******************
@@ -472,6 +471,7 @@ function initiateDemolitionNodes() {
   const RECT_SIZE = RECT.WIDTH; // Assuming RECT.WIDTH === RECT.HEIGHT
 
   // **6. Create nodes as rectangles**
+  console.log("create rects...");
   nodes = svg
     .selectAll("rect.nodes") // Use a more specific selector to prevent duplicates
     .data(palestinianDemolitions)
@@ -494,10 +494,8 @@ function initiateDemolitionNodes() {
       (d) =>
         walkY(
           getRandomNumberBetween(
-            getRandomNumberBetween(
-              (CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8,
-              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
-            )
+            (CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8,
+            ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
           )
         ) -
         RECT_SIZE / 2
@@ -536,6 +534,8 @@ function initiateDemolitionNodes() {
       // Remove highlight
       d3.select(this).classed("highlighted", false);
     });
+
+  console.log("done...");
 
   // **7. Define each tick of simulation**
   simulation
@@ -651,6 +651,47 @@ function splitNodesLeftRight() {
     .restart();
 }
 
+function drawMap() {
+  console.log("drawing map...");
+  svg
+    .append("foreignObject")
+    .attr("width", ADJ_WIDTH)
+    .attr("height", ADJ_HEIGHT)
+    .attr("x", 0)
+    .attr("y", MARGIN.TOP)
+    .attr("class", "map-foreignobject")
+    .append("xhtml:div")
+    .attr("id", "map"); // this div will host the Mapbox map
+
+  // Set your Mapbox access token
+  mapboxgl.accessToken =
+    "pk.eyJ1IjoibWljaGFlbC1jYWhhbmEiLCJhIjoiY202anoyYWs1MDB5NTJtcHdscXRpYWlmeSJ9.sKNNFh9wACNAHYN4ExzyWQ";
+
+  // Initialize the Mapbox map
+  const map = new mapboxgl.Map({
+    container: "map",
+    style: "mapbox://styles/mapbox/light-v11",
+    center: [35.250088, 31.95],
+    zoom: 7.9,
+  });
+
+  // Add zoom and rotation controls to the map.
+  map.addControl(new mapboxgl.NavigationControl());
+
+  map.on("load", () => {
+    // Create an SVG layer
+    d3.select("#map")
+      .append("svg")
+      .attr("class", "d3-overlay")
+      .style("position", "absolute")
+      .style("top", 0)
+      .style("left", 0)
+      .style("width", "100%")
+      .style("height", "100%")
+      .style("pointer-events", "none"); // Allow mouse events to pass through
+  });
+}
+
 // *******************
 // Scroll
 // *******************
@@ -674,6 +715,9 @@ let activationFunctions = [
   },
   () => {
     splitNodesLeftRight();
+  },
+  () => {
+    drawMap();
   },
 ];
 
