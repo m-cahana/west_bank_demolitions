@@ -41,7 +41,7 @@ d3.csv("data/raw/palestinian_permits.csv").then((data) => {
     d.permits = Number(d.permits) + 1;
   });
 
-  palestinianPermits = data;
+  palestinianPermits = data.filter((d) => (d.year > 2010) & (d.year <= 2020));
 
   setTimeout(drawInitial, 100);
 });
@@ -325,11 +325,11 @@ function consolidatePalestinianLines() {
     svg
       .append("text")
       .attr("class", "dubois-label")
-      .attr("x", walkX(-6))
-      .attr("y", walkY(consolidatedPathData[0].value - 1.5))
-      .attr("dy", "-0.5em") // Adjust vertical position (above the point)
+      .attr("x", walkX(15))
+      .attr("y", walkY(consolidatedPathData[0].value + 3))
+      .attr("text-anchor", "start")
       .attr("fill", "black")
-      .text(`${yearStart} - ${yearEnd}`);
+      .text("Palestinian permits granted in a decade");
 
     palestinianPermits.forEach((d) => {
       svg
@@ -420,15 +420,24 @@ function drawIsraeliLines() {
     [
       yearlyIsraeliPermits / speedImprovementFactor,
       STEP_CONFIG.LENGTH * speedImprovementFactor,
-      STEP_CONFIG.Y_START,
+      STEP_CONFIG.Y_START - 1,
       STEP_CONFIG.Y_CHANGE,
       false,
       STEP_CONFIG.STEPS_UNTIL_TURN / speedImprovementFactor,
     ], // generatorParams: totalSteps, stepLength, initialY, yChange, Increment
     line,
-    "2024 alone",
     0
   );
+
+  // Append a new consolidated label
+  svg
+    .append("text")
+    .attr("class", "dubois-label")
+    .attr("x", walkX(14.2))
+    .attr("y", walkY(STEP_CONFIG.Y_START + 1.75))
+    .attr("text-anchor", "start")
+    .attr("fill", "black")
+    .text("Israeli permits granted in a single year");
 
   console.log(Math.floor(2000 / STEP_CONFIG.STEPS_UNTIL_TURN));
   console.log(israeliLine.getData());

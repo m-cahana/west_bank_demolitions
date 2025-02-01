@@ -15,8 +15,8 @@ body {
   margin: 0;
   padding: 0;
   background-color: rgba(0, 0, 0, 0);
-  font-family: "Roboto", sans-serif;
-  font-weight: 350;
+  font-family: "Helvetica";
+  font-weight: 300;
   font-size: 14px;
   overflow-x: hidden;
 }
@@ -256,7 +256,7 @@ strong {
 
 .nodes {
   stroke: none;
-  fill: rgba(204, 35, 35, 0.86);
+  fill: black;
   transition: stroke 0.1s ease, stroke-width 0.1s ease;
 }
 
