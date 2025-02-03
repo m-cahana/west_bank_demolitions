@@ -736,16 +736,4 @@ scroll();
 let lastIndex,
   activeIndex = 0;
 scroll.on("active", function (index) {
-  activeIndex = index;
-
-  let sign = activeIndex - lastIndex < 0 ? -1 : 1;
-  let scrolledSections = d3.range(lastIndex + sign, activeIndex + sign, sign);
-
-  scrolledSections.forEach((i) => {
-    activationFunctions[i]();
-  });
-  lastIndex = activeIndex;
-});
-
-// Reload on top of page
-history.scrollRestoration = "manual";
+  activeIndex = ind
