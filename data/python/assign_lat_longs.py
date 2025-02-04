@@ -69,7 +69,7 @@ def find_best_match(query, choices, scorer=fuzz.token_sort_ratio, threshold=90):
 
 df = clean_cols(df)
 gdf = lowercase_titles(gdf)
-gdf = gdf.rename(columns = {'x': 'lat', 'y': 'long'})
+gdf = gdf.rename(columns = {'x': 'long', 'y': 'lat'})
 
 
 # ---- fuzzy matching locations -----
@@ -98,8 +98,8 @@ remaining_locations['long'] = remaining_locations.long.replace('null', np.nan).a
 # ---- manually assign locations for all remaining -----
 
 remaining_locations_to_fix = remaining_locations[
-    ((remaining_locations.lat < 30)  | (remaining_locations.lat > 40)) | 
-    ((remaining_locations.long < 30)  | (remaining_locations.long > 40)) | 
+    ((remaining_locations.lat < 31.3)  | (remaining_locations.lat > 32.5)) | 
+    ((remaining_locations.long < 34.9)  | (remaining_locations.long > 35.55)) | 
     (remaining_locations.lat_long == 'null')
 ]
 
@@ -253,12 +253,15 @@ manual_adjustments = {
     "al-Jab'ah": [31.6744661, 35.0666573],
     "Abu al-'Urqan": [31.4313811, 35.0115543],
     "'Arabunah": [32.5119031,35.3540103],
+    "a-Lubban al-Gharbiyah": [32.0357751,35.0280653], 
+    "al-'Ubeidiyah": [31.7238291, 35.2815213],
+    "a-Zbeidat": [32.1743061, 35.5196583]
 
 }
 # Apply the functions row-wise
-remaining_locations_to_fix['lat'] = remaining_locations_to_fix.apply(lambda row:  manual_adjustments[row['locality']][0] if row['locality'] in manual_adjustments else row['lat'], axis = 1)
+remaining_locations_to_fix['lat'] = remaining_locations_to_fix.apply(lambda row:  manual_adjustments[row['locality']][0] if row['locality'] in manual_adjustments else np.nan, axis = 1)
 
-remaining_locations_to_fix['long'] = remaining_locations_to_fix.apply(lambda row:  manual_adjustments[row['locality']][1] if row['locality'] in manual_adjustments else row['long'], axis = 1)
+remaining_locations_to_fix['long'] = remaining_locations_to_fix.apply(lambda row:  manual_adjustments[row['locality']][1] if row['locality'] in manual_adjustments else np.nan, axis = 1)
 
 # ---- combine -----
 
@@ -270,8 +273,8 @@ final_locations = pd.concat([
         right_on = 'pcbs_name'
     ), 
      remaining_locations[
-        ~(((remaining_locations.lat < 30)  | (remaining_locations.lat > 40)) | 
-        ((remaining_locations.long < 30)  | (remaining_locations.long > 40)) | 
+        ~(((remaining_locations.lat < 31.3)  | (remaining_locations.lat > 32.5)) | 
+        ((remaining_locations.long < 34.9)  | (remaining_locations.long > 35.55)) | 
         (remaining_locations.lat_long == 'null'))
     ], 
     remaining_locations_to_fix
@@ -283,6 +286,8 @@ df = df.merge(final_locations,
     on = ['locality', 'district', 'area'], 
     how = 'left'
 )
+
+df = df[(df.lat.notna()) & (df.long.notna())]
 
 # ---- save output -----
 

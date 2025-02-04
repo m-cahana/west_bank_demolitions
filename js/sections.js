@@ -50,15 +50,16 @@ d3.csv("data/raw/palestinian_permits.csv").then((data) => {
 d3.csv("data/processed/demolitions.csv").then((data) => {
   // Convert column names to lowercase with underscores
 
-  data.forEach((d) => {
+  data.forEach((d, index) => {
     d.housing_units = Number(d.housing_units);
     d.minors_left_homeless = Number(d.minors_left_homeless);
     d.people_left_homeless = Number(d.people_left_homeless);
+    d.lat = Number(d.lat);
+    d.long = Number(d.long);
     d.crossed = false;
     d.skipOpacityChange = Math.random() < 0.01; // 5% chance to skip opacity change
+    d.id = index;
   });
-
-  console.log(data);
 
   palestinianDemolitions = data;
 });
@@ -287,8 +288,6 @@ function consolidatePalestinianLines() {
       0
     );
 
-    console.log(consolidatedPermits);
-
     const consolidatedPathData = duBoisLine(
       consolidatedPermits,
       STEP_CONFIG.LENGTH,
@@ -433,9 +432,6 @@ function drawIsraeliLines() {
     .attr("text-anchor", "start")
     .attr("fill", "black")
     .text("Israeli permits granted in a single year");
-
-  console.log(Math.floor(2000 / STEP_CONFIG.STEPS_UNTIL_TURN));
-  console.log(israeliLine.getData());
 }
 
 function hideIsraeliLines() {
@@ -475,7 +471,6 @@ function initiateDemolitionNodes() {
   const RECT_SIZE = RECT.WIDTH; // Assuming RECT.WIDTH === RECT.HEIGHT
 
   // **6. Create nodes as rectangles**
-  console.log("create rects...");
   nodes = svg
     .selectAll("rect.nodes") // Use a more specific selector to prevent duplicates
     .data(palestinianDemolitions)
@@ -514,8 +509,10 @@ function initiateDemolitionNodes() {
         tooltipInstance
           .html(
             `<strong>Housing units:</strong> ${d.housing_units}<br>
+            <strong>Locality:</strong> ${d.locality}<br>
             <strong>District:</strong> ${d.district}<br>
-            <strong>Locality:</strong> ${d.locality}`
+            <strong>Lat:</strong> ${d.lat}<br>
+            <strong>Long:</strong> ${d.long}`
           )
           .style("left", `${event.pageX + 10}px`) // Position tooltip near the mouse
           .style("top", `${event.pageY + 10}px`)
@@ -538,8 +535,6 @@ function initiateDemolitionNodes() {
       // Remove highlight
       d3.select(this).classed("highlighted", false);
     });
-
-  console.log("done...");
 
   // **7. Define each tick of simulation**
   simulation
@@ -579,8 +574,6 @@ function initiateDemolitionNodes() {
       "collide",
       d3.forceCollide().radius(2).strength(0.7) // Adjusted collision radius
     );
-
-  console.log(nodes);
 
   // **9. Restart the simulation**
   simulation.alpha(0.75).restart();
@@ -656,16 +649,22 @@ function splitNodesLeftRight() {
 }
 
 function drawMap() {
-  console.log("drawing map...");
-  svg
+  // Append a div for the Mapbox map within your existing SVG container
+  const mapContainer = svg
+    .append("g")
+    .attr("class", "map-container")
+    .attr("transform", `translate(${MARGIN.LEFT}, ${MARGIN.TOP})`);
+
+  // Append a div for Mapbox inside the map container
+  mapContainer
     .append("foreignObject")
     .attr("width", ADJ_WIDTH)
     .attr("height", ADJ_HEIGHT)
-    .attr("x", 0)
-    .attr("y", MARGIN.TOP)
-    .attr("class", "map-foreignobject")
     .append("xhtml:div")
-    .attr("id", "map"); // this div will host the Mapbox map
+    .attr("id", "map") // This div will host the Mapbox map
+    .style("position", "relative")
+    .style("width", "100%")
+    .style("height", "100%");
 
   // Set your Mapbox access token
   mapboxgl.accessToken =
@@ -675,25 +674,73 @@ function drawMap() {
   const map = new mapboxgl.Map({
     container: "map",
     style: "mapbox://styles/mapbox/light-v11",
-    center: [35.250088, 31.95],
+    center: [35.250088, 31.95], // [lng, lat]
     zoom: 7.9,
   });
 
   // Add zoom and rotation controls to the map.
   map.addControl(new mapboxgl.NavigationControl());
 
+  // Once the map loads, create an SVG overlay for D3 elements
   map.on("load", () => {
-    // Create an SVG layer
-    d3.select("#map")
+    // Create an SVG overlay
+    const mapSvg = d3
+      .select("#map")
       .append("svg")
-      .attr("class", "d3-overlay")
+      .attr("class", "map-overlay")
+      .style("width", "100%")
+      .style("height", "100%")
       .style("position", "absolute")
       .style("top", 0)
       .style("left", 0)
-      .style("width", "100%")
-      .style("height", "100%")
-      .style("pointer-events", "none"); // Allow mouse events to pass through
+      .style("pointer-events", "none"); // Allow map interactions
+
+    // Create a dedicated group for D3 nodes within the overlay SVG
+    const nodesOverlay = mapSvg.append("g").attr("class", "nodes-overlay");
+
+    // Save references to the map and overlay SVG for later use
+    // Since we're avoiding the window object, we'll manage these within closures or pass them as parameters
+    initiateNodeTransition(map);
   });
+}
+
+function initiateNodeTransition(map) {
+  // **1. Select existing nodes**
+  const nodes = svg.selectAll("rect.nodes");
+
+  // define bounds
+  const bounds = map.getBounds();
+
+  // Get the southwest corner (min longitude and min latitude)
+  const sw = bounds.getSouthWest(); // { lng, lat }
+
+  // Get the northeast corner (max longitude and max latitude)
+  const ne = bounds.getNorthEast(); // { lng, lat }
+
+  const geoX = d3
+    .scaleLinear()
+    .domain([sw.lng, ne.lng])
+    .range([MARGIN.LEFT, ADJ_WIDTH - MARGIN.RIGHT]);
+  const geoY = d3
+    .scaleLinear()
+    .domain([sw.lat, ne.lat])
+    .range([ADJ_HEIGHT - MARGIN.BOTTOM, MARGIN.TOP]);
+
+  // **4. Animate transition**
+  nodes
+    .raise()
+    .transition()
+    .duration(2000) // Duration of the transition in milliseconds
+    .attr("x", (d) => geoX(d.long))
+    .attr("y", (d) => geoY(d.lat))
+    .on("end", () => {
+      console.log("Node transition to map completed.");
+    });
+
+  simulation.stop();
+
+  // **5. Optional: Update node positions if map is moved later**
+  map.on("move", () => {});
 }
 
 // *******************
