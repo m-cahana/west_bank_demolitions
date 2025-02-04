@@ -11,7 +11,6 @@ df = pd.read_csv('../raw/demolitions.csv')
 
 gdf = gpd.read_file('../raw/palestiniancommunities_wb_gs/PalestinianCommunities_WB_GS.shp')
 
-
 # ----- functions -----
 
 def lowercase_titles(df): 
@@ -84,7 +83,7 @@ locations['precise_match'] = (locations.pcbs_match == locations.locality)
 # double checked these, they look good
 # locations[(locations.match) & (~locations.precise_match)]
 
-# ---- geocode remaining locations -----
+# ---- geocode locations -----
 
 gmaps = googlemaps.Client(key=google_maps_api_key)
 
@@ -95,6 +94,8 @@ remaining_locations['lat'] = remaining_locations.lat_long.str.split(',', expand=
 remaining_locations['lat'] = remaining_locations.lat.replace('null', np.nan).astype(float)
 remaining_locations['long'] = remaining_locations.lat_long.str.split(',', expand=True)[1]
 remaining_locations['long'] = remaining_locations.long.replace('null', np.nan).astype(float)
+
+# ---- manually assign locations for all remaining -----
 
 remaining_locations_to_fix = remaining_locations[
     ((remaining_locations.lat < 30)  | (remaining_locations.lat > 40)) | 
@@ -254,3 +255,35 @@ manual_adjustments = {
     "'Arabunah": [32.5119031,35.3540103],
 
 }
+# Apply the functions row-wise
+remaining_locations_to_fix['lat'] = remaining_locations_to_fix.apply(lambda row:  manual_adjustments[row['locality']][0] if row['locality'] in manual_adjustments else row['lat'], axis = 1)
+
+remaining_locations_to_fix['long'] = remaining_locations_to_fix.apply(lambda row:  manual_adjustments[row['locality']][1] if row['locality'] in manual_adjustments else row['long'], axis = 1)
+
+# ---- combine -----
+
+final_locations = pd.concat([
+    locations[locations.match].merge(
+        gdf[['pcbs_name', 'lat', 'long']], 
+        how = 'left', 
+        left_on = 'pcbs_match', 
+        right_on = 'pcbs_name'
+    ), 
+     remaining_locations[
+        ~(((remaining_locations.lat < 30)  | (remaining_locations.lat > 40)) | 
+        ((remaining_locations.long < 30)  | (remaining_locations.long > 40)) | 
+        (remaining_locations.lat_long == 'null'))
+    ], 
+    remaining_locations_to_fix
+])
+
+final_locations = final_locations[['locality', 'district', 'area', 'lat', 'long']]
+
+df = df.merge(final_locations, 
+    on = ['locality', 'district', 'area'], 
+    how = 'left'
+)
+
+# ---- save output -----
+
+df.to_csv('../processed/demolitions.csv', index = False)

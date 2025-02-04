@@ -47,23 +47,18 @@ d3.csv("data/raw/palestinian_permits.csv").then((data) => {
 });
 
 // Demolitions
-d3.csv("data/raw/demolitions.csv").then((data) => {
+d3.csv("data/processed/demolitions.csv").then((data) => {
   // Convert column names to lowercase with underscores
-  const columns = data.columns.map((col) =>
-    col.toLowerCase().replace(/\s+/g, "_")
-  );
 
   data.forEach((d) => {
-    columns.forEach((col, i) => {
-      d[col] = d[data.columns[i]];
-      delete d[data.columns[i]];
-    });
     d.housing_units = Number(d.housing_units);
     d.minors_left_homeless = Number(d.minors_left_homeless);
     d.people_left_homeless = Number(d.people_left_homeless);
     d.crossed = false;
     d.skipOpacityChange = Math.random() < 0.01; // 5% chance to skip opacity change
   });
+
+  console.log(data);
 
   palestinianDemolitions = data;
 });
