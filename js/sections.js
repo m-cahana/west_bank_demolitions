@@ -490,17 +490,12 @@ function initiateDemolitionNodes() {
   // **3. Instantiate a new force simulation**
   simulation = d3.forceSimulation(palestinianDemolitions);
 
-  // **4. Ensure a single tooltip instance**
-  let existingTooltip = d3.select(".tooltip");
-  let tooltipInstance;
-  if (existingTooltip.empty()) {
-    tooltipInstance = d3.select("body").append("div").attr("class", "tooltip");
-  } else {
-    tooltipInstance = existingTooltip;
-  }
-
   // **5. Define rectangle size**
   const RECT_SIZE = RECT.WIDTH; // Assuming RECT.WIDTH === RECT.HEIGHT
+
+  // Define centering margins (adjust based on your SVG size and desired centering)
+  const CENTERING_MARGIN_X = ADJ_WIDTH;
+  const CENTERING_MARGIN_Y = ADJ_HEIGHT;
 
   // **6. Create nodes as rectangles**
   nodes = svg
@@ -510,36 +505,14 @@ function initiateDemolitionNodes() {
     .enter()
     .append("rect")
     .attr("class", "nodes")
-    .attr(
-      "x",
-      (d) =>
-        walkX(
-          getRandomNumberBetween(
-            0,
-            ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
-          )
-        ) -
-        RECT_SIZE / 2
-    ) // Center the rectangle
-    .attr(
-      "y",
-      (d) =>
-        walkY(
-          getRandomNumberBetween(
-            (CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8,
-            ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
-          )
-        ) -
-        RECT_SIZE / 2
-    ) // Center the rectangle
+    .style("pointer-events", "all")
     .attr("width", (d) => d.housing_units ** (1 / 2) * RECT.WIDTH)
     .attr("height", (d) => d.housing_units ** (1 / 2) * RECT.HEIGHT)
-    .attr("fill", "steelblue") // Set a visible fill color
     .attr("opacity", RECT.OPACITY)
     .on("mouseover", function (event, d) {
+      console.log("mouseover");
       if (d3.select(this).attr("opacity") > 0) {
-        // Show the tooltip
-        tooltipInstance
+        tooltip
           .html(
             `<strong>Housing units:</strong> ${d.housing_units}<br>
             <strong>Locality:</strong> ${d.locality}<br>
@@ -557,13 +530,13 @@ function initiateDemolitionNodes() {
     })
     .on("mousemove", function (event) {
       // Update tooltip position as the mouse moves
-      tooltipInstance
+      tooltip
         .style("left", `${event.pageX + 10}px`)
         .style("top", `${event.pageY + 10}px`);
     })
     .on("mouseout", function () {
       // Hide the tooltip when mouse moves away
-      tooltipInstance.classed("visible", false);
+      tooltip.classed("visible", false);
 
       // Remove highlight
       d3.select(this).classed("highlighted", false);
@@ -583,8 +556,8 @@ function initiateDemolitionNodes() {
         .forceX((d) =>
           walkX(
             getRandomNumberBetween(
-              (CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8,
-              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
+              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * -1,
+              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 5
             )
           )
         )
@@ -665,7 +638,7 @@ function clamp(num, min, max) {
  */
 function splitNodesLeftRight() {
   // **1. Assign random target positions**
-  assignTargetPositions(10, 80);
+  assignTargetPositions(-20, 50);
 
   // **2. Update the force simulation**
   simulation
@@ -675,7 +648,7 @@ function splitNodesLeftRight() {
     )
     .force(
       "forceY",
-      d3.forceY((d) => walkY(getRandomNumberBetween(0, 100))).strength(0.2) // Spread vertically
+      d3.forceY((d) => walkY(getRandomNumberBetween(0, 90))).strength(0.2) // Spread vertically
     )
     .alpha(0.75) // Ensure the simulation restarts effectively
     .restart();
@@ -703,6 +676,14 @@ function drawMap() {
     // Since we're avoiding the window object, we'll manage these within closures or pass them as parameters
     initiateNodeTransition(map);
   });
+}
+function hideMap() {
+  // Select and hide only the map canvas(es)
+  d3.select("#map").selectAll(".mapboxgl-canvas").style("display", "none");
+
+  d3.selectAll(
+    ".mapboxgl-ctrl-container, .mapboxgl-ctrl, .mapboxgl-control"
+  ).style("display", "none");
 }
 
 function initiateNodeTransition(map) {
@@ -776,6 +757,7 @@ let activationFunctions = [
   },
   () => {
     splitNodesLeftRight();
+    hideMap();
   },
   () => {
     drawMap();

@@ -100,7 +100,8 @@ remaining_locations['long'] = remaining_locations.long.replace('null', np.nan).a
 remaining_locations_to_fix = remaining_locations[
     ((remaining_locations.lat < 31.3)  | (remaining_locations.lat > 32.5)) | 
     ((remaining_locations.long < 34.9)  | (remaining_locations.long > 35.55)) | 
-    (remaining_locations.lat_long == 'null')
+    (remaining_locations.lat_long == 'null') | 
+    (remaining_locations.locality == "Barta'ah a-Sharqiyah")
 ]
 
 # done manually using google maps and 
@@ -255,7 +256,8 @@ manual_adjustments = {
     "'Arabunah": [32.5119031,35.3540103],
     "a-Lubban al-Gharbiyah": [32.0357751,35.0280653], 
     "al-'Ubeidiyah": [31.7238291, 35.2815213],
-    "a-Zbeidat": [32.1743061, 35.5196583]
+    "a-Zbeidat": [32.1743061, 35.5196583], 
+    "Barta'ah a-Sharqiyah": [32.4754831, 35.0816733]
 
 }
 # Apply the functions row-wise
@@ -275,7 +277,8 @@ final_locations = pd.concat([
      remaining_locations[
         ~(((remaining_locations.lat < 31.3)  | (remaining_locations.lat > 32.5)) | 
         ((remaining_locations.long < 34.9)  | (remaining_locations.long > 35.55)) | 
-        (remaining_locations.lat_long == 'null'))
+        (remaining_locations.lat_long == 'null') | 
+        (remaining_locations.locality == "Barta'ah a-Sharqiyah"))
     ], 
     remaining_locations_to_fix
 ])

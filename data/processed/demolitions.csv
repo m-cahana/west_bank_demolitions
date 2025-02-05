@@ -86,9 +86,9 @@ date_of_demolition,locality,district,area,housing_units,people_left_homeless,min
 2024-11-28,Beit 'Anan,al-Quds,West Bank,2,0,0,Non Resedential,Beit 'Anan,31.8513542479,35.1121687697
 2024-11-28,Beit 'Anan,al-Quds,West Bank,1,0,0,Non Resedential,Beit 'Anan,31.8513542479,35.1121687697
 2024-11-28,Beit 'Anan,al-Quds,West Bank,2,0,0,Non Resedential,Beit 'Anan,31.8513542479,35.1121687697
-2024-11-27,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2024-11-27,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2024-11-27,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2024-11-27,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2024-11-27,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2024-11-27,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2024-11-26,Huwarah,Nablus,West Bank,0,0,0,Non Resedential,Huwarah,32.151313,35.256799
 2024-11-25,Deir Dobwan,Ramallah and al-Bira,West Bank,1,0,0,Non Resedential,Deir Dobwan,31.9109254939,35.2672309655
 2024-11-25,Deir Dobwan,Ramallah and al-Bira,West Bank,2,0,0,Non Resedential,Deir Dobwan,31.9109254939,35.2672309655
@@ -1764,9 +1764,9 @@ date_of_demolition,locality,district,area,housing_units,people_left_homeless,min
 2021-01-04,al-Khader,Bethlehem,West Bank,1,0,0,Non Resedential,al-Khader,31.694811,35.170745
 2021-01-04,al-Khader,Bethlehem,West Bank,1,0,0,Non Resedential,al-Khader,31.694811,35.170745
 2021-01-04,'Anata,al-Quds,West Bank,1,0,0,Non Resedential,'Anata,31.8110123384,35.2610546497
-2020-12-29,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2020-12-29,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2020-12-29,a-Nuwei'mah al-Foqa,Jericho,West Bank,1,0,0,Non Resedential,al-Nuwei'mah al-Foqa,31.8917063,35.4265132
-2020-12-29,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2020-12-29,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2020-12-29,a-Nuwei'mah al-Foqa,Jericho,West Bank,1,0,0,Non Resedential,al-Nuwei'mah al-Foqa,31.8917063,35.4265132
 2020-12-29,a-Nuwei'mah al-Foqa,Jericho,West Bank,1,0,0,Non Resedential,al-Nuwei'mah al-Foqa,31.8917063,35.4265132
 2020-12-29,Kh. Wadi Ejheish,Hebron,West Bank,1,0,0,Residental,Khirbet Wadi Ejheish,31.3805489,35.0964301
@@ -2271,7 +2271,7 @@ date_of_demolition,locality,district,area,housing_units,people_left_homeless,min
 2019-06-26,Deir Ballut,Salfit,West Bank,1,0,0,Non Resedential,Deir Ballut,32.0654555868,35.0251805762
 2019-06-24,al-Mufaqarah,Hebron,West Bank,1,14,5,Residental,al-Mufaqarah,31.4097184,35.1578761
 2019-06-23,Qaffin,Tulkarm,West Bank,2,0,0,Non Resedential,Qaffin,32.4321221504,35.0829104299
-2019-06-20,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2019-06-20,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2019-06-19,Tarqumya,Hebron,West Bank,1,0,0,Non Resedential,Tarqumya,31.5754915411,35.0127304228
 2019-06-19,Tarqumya,Hebron,West Bank,2,0,0,Non Resedential,Tarqumya,31.5754915411,35.0127304228
 2019-06-19,Jericho,Jericho,West Bank,1,0,0,Residental,Jericho,31.8591485726,35.4631790704
@@ -2362,7 +2362,7 @@ date_of_demolition,locality,district,area,housing_units,people_left_homeless,min
 2018-11-08,a-Za'ayem,al-Quds,West Bank,0,0,0,Non Resedential,al-Za'ayem,31.7821381,35.2488158
 2018-11-08,a-Za'ayem,al-Quds,West Bank,1,0,0,Residental,al-Za'ayem,31.7821381,35.2488158
 2018-11-08,Kh.Ibziq,Tubas,West Bank,1,0,0,Non Resedential,KhirbetIbziq,32.3788375,35.3913618
-2018-11-07,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2018-11-07,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2018-11-05,al-Hadidiyah,Tubas,West Bank,2,0,0,Residental,al-Hadidiyah,32.2428235,35.4888935
 2018-11-05,al-Hadidiyah,Tubas,West Bank,1,0,0,Non Resedential,al-Hadidiyah,32.2428235,35.4888935
 2018-10-29,'Anata,al-Quds,West Bank,1,0,0,Residental,'Anata,31.8110123384,35.2610546497
@@ -2403,9 +2403,9 @@ date_of_demolition,locality,district,area,housing_units,people_left_homeless,min
 2018-09-03,al-Walajah,Bethlehem,West Bank,1,5,3,Residental,al-Walajah,31.729394,35.15853
 2018-09-03,al-Walajah,Bethlehem,West Bank,1,0,0,Residental,al-Walajah,31.729394,35.15853
 2018-09-03,al-Walajah,Bethlehem,West Bank,1,5,3,Residental,al-Walajah,31.729394,35.15853
-2018-08-29,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2018-08-29,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2018-08-29,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2018-08-29,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2018-08-29,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2018-08-29,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2018-08-15,Hizma,al-Quds,West Bank,3,0,0,Non Resedential,Hizma,31.8337917136,35.2639332723
 2018-08-14,Deir Dobwan,Ramallah and al-Bira,West Bank,2,0,0,Residental,Deir Dobwan,31.9109254939,35.2672309655
 2018-08-08,a-Samu',Hebron,West Bank,1,7,5,Residental,al-Samu',31.39779059999999,35.0498292
@@ -2515,9 +2515,9 @@ date_of_demolition,locality,district,area,housing_units,people_left_homeless,min
 2017-11-07,Khallet al-Fouleh,Jericho,West Bank,1,8,4,Residental,Khallet al-Fouleh,32.152561,35.4708271
 2017-11-07,Khallet al-Fouleh,Jericho,West Bank,1,6,4,Residental,Khallet al-Fouleh,32.152561,35.4708271
 2017-11-07,Furush Beit Dajan,Nablus,West Bank,1,0,0,Non Resedential,Furush Beit Dajan,32.1850648124,35.4530757752
-2017-10-31,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2017-10-31,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2017-10-31,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2017-10-31,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2017-10-31,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2017-10-31,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2017-10-19,al-Mufaqarah,Hebron,West Bank,1,0,0,Non Resedential,al-Mufaqarah,31.4097184,35.1578761
 2017-10-19,Hizma,al-Quds,West Bank,1,0,0,Residental,Hizma,31.8337917136,35.2639332723
 2017-10-19,Kh. al-Halawah,Hebron,West Bank,1,8,4,Residental,Khirbet al-Halawah,31.3741749,35.1455531
@@ -2616,8 +2616,8 @@ date_of_demolition,locality,district,area,housing_units,people_left_homeless,min
 2017-01-17,'Aqraba,Nablus,West Bank,1,0,0,Non Resedential,'Aqraba,32.1258481981,35.3442644233
 2017-01-17,Kh. Twayel,Nablus,West Bank,1,7,0,Residental,Khirbet Twayel,32.1016731,35.3576984
 2017-01-17,Kh. Twayel,Nablus,West Bank,3,0,0,Non Resedential,Khirbet Twayel,32.1016731,35.3576984
-2017-01-12,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2017-01-12,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2017-01-12,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2017-01-12,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2017-01-11,Bani Na'im,Hebron,West Bank,1,0,0,Non Resedential,Bani Na'im,31.519348463,35.1596811042
 2017-01-10,Kh. a-Ras al-Ahmar,Tubas,West Bank,1,0,0,Non Resedential,Khirbet al-Ras al-Ahmar,32.2812672,35.4508003
 2017-01-10,al-Hadidiyah,Tubas,West Bank,1,0,0,Non Resedential,al-Hadidiyah,32.2428235,35.4888935
@@ -2774,7 +2774,7 @@ date_of_demolition,locality,district,area,housing_units,people_left_homeless,min
 2016-08-16,Kh.Jurat al-Kheil,Hebron,West Bank,1,5,2,Residental,KhirbetJurat al-Kheil,31.5927268,35.1766262
 2016-08-16,'Anata,al-Quds,West Bank,1,0,0,Non Resedential,'Anata,31.8110123384,35.2610546497
 2016-08-11,Fqeiqis,Hebron,West Bank,1,0,0,Non Resedential,Fqeiqis,31.4888731604,34.9868286991
-2016-08-11,Barta'ah a-Sharqiyah,Jenin,West Bank,2,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2016-08-11,Barta'ah a-Sharqiyah,Jenin,West Bank,2,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2016-08-09,Um al-Kheir,Hebron,West Bank,1,6,4,Residental,Um al-Kheir,31.4244109,35.1962356
 2016-08-09,Um al-Kheir,Hebron,West Bank,1,0,0,Residental,Um al-Kheir,31.4244109,35.1962356
 2016-08-09,Sabastiya,Nablus,West Bank,1,0,0,Non Resedential,Sabastiya,32.2756249203,35.1978164146
@@ -3295,7 +3295,7 @@ date_of_demolition,locality,district,area,housing_units,people_left_homeless,min
 2015-03-11,Zabdah,Jenin,West Bank,3,21,13,Residental,Zabdah,32.4489044747,35.1289545561
 2015-03-11,Zabdah,Jenin,West Bank,6,0,0,Non Resedential,Zabdah,32.4489044747,35.1289545561
 2015-03-11,Beit Iksa,al-Quds,West Bank,1,0,0,Residental,Beit Iksa,31.8183940213,35.1790045793
-2015-03-11,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2015-03-11,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2015-03-11,Beit Iksa,al-Quds,West Bank,1,0,0,Residental,Beit Iksa,31.8183940213,35.1790045793
 2015-03-10,al-Jiftlik,Jericho,West Bank,1,6,2,Residental,al-Jiftlik,32.1566143,35.4706606
 2015-03-10,al-Jiftlik,Jericho,West Bank,1,0,0,Non Resedential,al-Jiftlik,32.1566143,35.4706606
@@ -3454,8 +3454,8 @@ date_of_demolition,locality,district,area,housing_units,people_left_homeless,min
 2014-08-20,Badu a-Mu'arrajat,Ramallah and al-Bira,West Bank,1,0,0,Non Resedential,Badu al-Mu'arrajat,31.9125193,35.3329536
 2014-08-20,Badu a-Mu'arrajat,Ramallah and al-Bira,West Bank,2,8,4,Residental,Badu al-Mu'arrajat,31.9125193,35.3329536
 2014-08-18,al-Walajah,Bethlehem,West Bank,3,0,0,Non Resedential,al-Walajah,31.729394,35.15853
-2014-08-06,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2014-08-06,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2014-08-06,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2014-08-06,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2014-07-03,al-'Aqabah,Tubas,West Bank,1,0,0,Non Resedential,al-'Aqabah,32.3377522,35.4103511
 2014-07-03,al-'Aqabah,Tubas,West Bank,1,0,0,Non Resedential,al-'Aqabah,32.3377522,35.4103511
 2014-07-03,al-'Aqabah,Tubas,West Bank,1,10,8,Residental,al-'Aqabah,32.3377522,35.4103511
@@ -3691,13 +3691,13 @@ date_of_demolition,locality,district,area,housing_units,people_left_homeless,min
 2013-09-16,Khallet Makhul,Tubas,West Bank,3,0,0,Non Resedential,Khallet Makhul,32.2702618,35.4982756
 2013-09-16,Khallet Makhul,Tubas,West Bank,1,5,0,Residental,Khallet Makhul,32.2702618,35.4982756
 2013-09-16,Khallet Makhul,Tubas,West Bank,2,0,0,Non Resedential,Khallet Makhul,32.2702618,35.4982756
-2013-09-12,Barta'ah a-Sharqiyah,Jenin,West Bank,6,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2013-09-12,Barta'ah a-Sharqiyah,Jenin,West Bank,2,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2013-09-12,Barta'ah a-Sharqiyah,Jenin,West Bank,6,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2013-09-12,Barta'ah a-Sharqiyah,Jenin,West Bank,2,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2013-09-11,a-Za'ayem,al-Quds,West Bank,10,62,40,Residental,al-Za'ayem,31.7821381,35.2488158
 2013-09-11,a-Za'ayem,al-Quds,West Bank,10,0,0,Non Resedential,al-Za'ayem,31.7821381,35.2488158
 2013-09-09,Khan al-Ahmar (Bedouin Community),al-Quds,West Bank,2,0,0,Residental,Khan al-Ahmar (Bedouin Community),31.8032785,35.3355922
 2013-09-09,Khan al-Ahmar (Bedouin Community),al-Quds,West Bank,1,0,0,Non Resedential,Khan al-Ahmar (Bedouin Community),31.8032785,35.3355922
-2013-09-09,Barta'ah a-Sharqiyah,Jenin,West Bank,2,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2013-09-09,Barta'ah a-Sharqiyah,Jenin,West Bank,2,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2013-09-03,Fasayil,Jericho,West Bank,1,0,0,Non Resedential,Fasayil,32.025308057,35.4433117553
 2013-09-03,Fasayil,Jericho,West Bank,1,10,6,Residental,Fasayil,32.025308057,35.4433117553
 2013-08-20,Furush Beit Dajan,Nablus,West Bank,1,6,3,Residental,Furush Beit Dajan,32.1850648124,35.4530757752
@@ -3738,22 +3738,22 @@ date_of_demolition,locality,district,area,housing_units,people_left_homeless,min
 2013-06-27,Kh. a-Ras al-Ahmar,Tubas,West Bank,6,0,0,Non Resedential,Khirbet al-Ras al-Ahmar,32.2812672,35.4508003
 2013-06-27,Kh. a-Ras al-Ahmar,Tubas,West Bank,1,7,1,Residental,Khirbet al-Ras al-Ahmar,32.2812672,35.4508003
 2013-06-27,Kh. a-Ras al-Ahmar,Tubas,West Bank,3,0,0,Non Resedential,Khirbet al-Ras al-Ahmar,32.2812672,35.4508003
-2013-06-12,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Residental,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2013-06-12,Barta'ah a-Sharqiyah,Jenin,West Bank,3,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2013-06-12,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Residental,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2013-06-12,Barta'ah a-Sharqiyah,Jenin,West Bank,3,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2013-05-29,Hizma,al-Quds,West Bank,2,0,0,Non Resedential,Hizma,31.8337917136,35.2639332723
 2013-05-27,al-Jiftlik,Jericho,West Bank,1,0,0,Residental,al-Jiftlik,32.1566143,35.4706606
 2013-05-27,al-Jiftlik,Jericho,West Bank,1,0,0,Residental,al-Jiftlik,32.1566143,35.4706606
 2013-05-27,al-Jiftlik,Jericho,West Bank,1,0,0,Non Resedential,al-Jiftlik,32.1566143,35.4706606
-2013-05-20,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2013-05-20,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2013-05-20,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2013-05-20,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2013-05-20,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2013-05-09,Barta'ah a-Sharqiyah,Jenin,West Bank,1,2,0,Residental,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2013-05-09,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2013-05-09,Barta'ah a-Sharqiyah,Jenin,West Bank,3,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2013-05-09,Barta'ah a-Sharqiyah,Jenin,West Bank,2,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
-2013-05-09,Barta'ah a-Sharqiyah,Jenin,West Bank,2,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4678335,35.0301413
+2013-05-20,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2013-05-20,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2013-05-20,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2013-05-20,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2013-05-20,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2013-05-09,Barta'ah a-Sharqiyah,Jenin,West Bank,1,2,0,Residental,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2013-05-09,Barta'ah a-Sharqiyah,Jenin,West Bank,1,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2013-05-09,Barta'ah a-Sharqiyah,Jenin,West Bank,3,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2013-05-09,Barta'ah a-Sharqiyah,Jenin,West Bank,2,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
+2013-05-09,Barta'ah a-Sharqiyah,Jenin,West Bank,2,0,0,Non Resedential,Barta'ah al-Sharqiyah,32.4754831,35.0816733
 2013-05-08,Fasayil,Jericho,West Bank,1,0,0,Residental,Fasayil,32.025308057,35.4433117553
 2013-05-08,al-A'uja,Jericho,West Bank,1,3,0,Residental,al-A'uja,31.9480641,35.4608643
 2013-05-08,al-A'uja,Jericho,West Bank,1,3,1,Residental,al-A'uja,31.9480641,35.4608643
