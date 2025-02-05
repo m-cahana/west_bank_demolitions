@@ -6,6 +6,7 @@ let walkX, walkY, line, lineGroup;
 let palestinianPermits, palestinianDemolitions;
 
 let simulation, nodes;
+let mapSvg, mapContainer, nodesOverlay;
 
 let CORE_MARGIN = { LEFT: 150, RIGHT: 100, TOP: 50, BOTTOM: 20 };
 let CORE_XY_DOMAIN = { START: 0, END: 100 };
@@ -273,6 +274,37 @@ function drawInitial() {
       STEP_CONFIG.Y_START -= STEP_CONFIG.Y_CHANGE;
     }
   });
+
+  // some map constants
+  mapContainer = svg
+    .append("g")
+    .attr("class", "map-container")
+    .attr("transform", `translate(${MARGIN.LEFT}, ${MARGIN.TOP})`);
+
+  // Append a div for Mapbox inside the map container
+  mapContainer
+    .append("foreignObject")
+    .attr("width", ADJ_WIDTH)
+    .attr("height", ADJ_HEIGHT)
+    .append("xhtml:div")
+    .attr("id", "map") // This div will host the Mapbox map
+    .style("position", "relative")
+    .style("width", "100%")
+    .style("height", "100%");
+
+  mapSvg = d3
+    .select("#map")
+    .append("svg")
+    .attr("class", "map-overlay")
+    .style("width", "100%")
+    .style("height", "100%")
+    .style("position", "absolute")
+    .style("top", 0)
+    .style("left", 0)
+    .style("pointer-events", "none");
+
+  // Create a dedicated group for D3 nodes within the overlay SVG
+  nodesOverlay = mapSvg.append("g").attr("class", "nodes-overlay");
 }
 
 function consolidatePalestinianLines() {
@@ -472,6 +504,7 @@ function initiateDemolitionNodes() {
 
   // **6. Create nodes as rectangles**
   nodes = svg
+    .select(".nodes-overlay")
     .selectAll("rect.nodes") // Use a more specific selector to prevent duplicates
     .data(palestinianDemolitions)
     .enter()
@@ -482,7 +515,7 @@ function initiateDemolitionNodes() {
       (d) =>
         walkX(
           getRandomNumberBetween(
-            (CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8,
+            0,
             ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
           )
         ) -
@@ -649,23 +682,6 @@ function splitNodesLeftRight() {
 }
 
 function drawMap() {
-  // Append a div for the Mapbox map within your existing SVG container
-  const mapContainer = svg
-    .append("g")
-    .attr("class", "map-container")
-    .attr("transform", `translate(${MARGIN.LEFT}, ${MARGIN.TOP})`);
-
-  // Append a div for Mapbox inside the map container
-  mapContainer
-    .append("foreignObject")
-    .attr("width", ADJ_WIDTH)
-    .attr("height", ADJ_HEIGHT)
-    .append("xhtml:div")
-    .attr("id", "map") // This div will host the Mapbox map
-    .style("position", "relative")
-    .style("width", "100%")
-    .style("height", "100%");
-
   // Set your Mapbox access token
   mapboxgl.accessToken =
     "pk.eyJ1IjoibWljaGFlbC1jYWhhbmEiLCJhIjoiY202anoyYWs1MDB5NTJtcHdscXRpYWlmeSJ9.sKNNFh9wACNAHYN4ExzyWQ";
@@ -683,21 +699,6 @@ function drawMap() {
 
   // Once the map loads, create an SVG overlay for D3 elements
   map.on("load", () => {
-    // Create an SVG overlay
-    const mapSvg = d3
-      .select("#map")
-      .append("svg")
-      .attr("class", "map-overlay")
-      .style("width", "100%")
-      .style("height", "100%")
-      .style("position", "absolute")
-      .style("top", 0)
-      .style("left", 0)
-      .style("pointer-events", "none"); // Allow map interactions
-
-    // Create a dedicated group for D3 nodes within the overlay SVG
-    const nodesOverlay = mapSvg.append("g").attr("class", "nodes-overlay");
-
     // Save references to the map and overlay SVG for later use
     // Since we're avoiding the window object, we'll manage these within closures or pass them as parameters
     initiateNodeTransition(map);
@@ -705,42 +706,51 @@ function drawMap() {
 }
 
 function initiateNodeTransition(map) {
-  // **1. Select existing nodes**
+  // select existing nodes
   const nodes = svg.selectAll("rect.nodes");
 
-  // define bounds
-  const bounds = map.getBounds();
+  function updateNodePositions() {
+    nodes
+      .attr(
+        "x",
+        (d) =>
+          map.project([d.long, d.lat]).x -
+          (d.housing_units ** 0.5 * RECT.WIDTH) / 2
+      )
+      .attr(
+        "y",
+        (d) =>
+          map.project([d.long, d.lat]).y -
+          (d.housing_units ** 0.5 * RECT.HEIGHT) / 2
+      );
+  }
 
-  // Get the southwest corner (min longitude and min latitude)
-  const sw = bounds.getSouthWest(); // { lng, lat }
-
-  // Get the northeast corner (max longitude and max latitude)
-  const ne = bounds.getNorthEast(); // { lng, lat }
-
-  const geoX = d3
-    .scaleLinear()
-    .domain([sw.lng, ne.lng])
-    .range([MARGIN.LEFT, ADJ_WIDTH - MARGIN.RIGHT]);
-  const geoY = d3
-    .scaleLinear()
-    .domain([sw.lat, ne.lat])
-    .range([ADJ_HEIGHT - MARGIN.BOTTOM, MARGIN.TOP]);
-
-  // **4. Animate transition**
+  // animate transition
   nodes
     .raise()
     .transition()
     .duration(2000) // Duration of the transition in milliseconds
-    .attr("x", (d) => geoX(d.long))
-    .attr("y", (d) => geoY(d.lat))
+    .attr(
+      "x",
+      (d) =>
+        map.project([d.long, d.lat]).x -
+        (d.housing_units ** 0.5 * RECT.WIDTH) / 2
+    )
+    .attr(
+      "y",
+      (d) =>
+        map.project([d.long, d.lat]).y -
+        (d.housing_units ** 0.5 * RECT.HEIGHT) / 2
+    )
     .on("end", () => {
       console.log("Node transition to map completed.");
     });
 
   simulation.stop();
 
-  // **5. Optional: Update node positions if map is moved later**
-  map.on("move", () => {});
+  // optional: Update node positions if map is moved later
+  map.on("move", updateNodePositions);
+  map.on("zoom", updateNodePositions);
 }
 
 // *******************
