@@ -68,7 +68,7 @@ d3.csv("data/processed/demolitions.csv").then((data) => {
     d.lat = Number(d.lat);
     d.long = Number(d.long);
     d.crossed = false;
-    d.skipOpacityChange = Math.random() < 0.01; // 5% chance to skip opacity change
+    d.simulateGrant = Math.random() < 0.01; // 1% chance to skip opacity change
     d.id = index;
 
     d.date_of_demolition = new Date(d.date_of_demolition);
@@ -607,10 +607,10 @@ function assignTargetPositions(
   baseLeftX,
   baseRightX,
   BUFFER_LEFT = 2,
-  BUFFER_RIGHT = 20
+  BUFFER_RIGHT = 30
 ) {
   palestinianDemolitions.forEach((d) => {
-    if (d.skipOpacityChange) {
+    if (d.simulateGrant) {
       // Left-moving node: randomize within [baseLeftX - BUFFER_X, baseLeftX + BUFFER_X]
       d.targetX = walkX(
         baseLeftX + getRandomNumberBetween(-BUFFER_LEFT, BUFFER_LEFT)
@@ -696,6 +696,14 @@ function splitNodesLeftRight() {
 
 function removePermitLabels() {
   svg.selectAll("g.permit-labels").remove();
+}
+
+function hideGrantedPermits() {
+  nodes.attr("opacity", (d) => (d.simulateGrant ? 0 : RECT.OPACITY));
+}
+
+function showGrantedPermits() {
+  nodes.attr("opacity", RECT.OPACITY);
 }
 
 function drawMap() {
@@ -807,10 +815,15 @@ let activationFunctions = [
   () => {
     splitNodesLeftRight();
     hideMap();
+    showGrantedPermits();
   },
   () => {
     removePermitLabels();
+    hideGrantedPermits();
     drawMap();
+  },
+  () => {
+    hideMap();
   },
 ];
 
