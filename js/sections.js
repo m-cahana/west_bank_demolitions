@@ -30,8 +30,8 @@ let STEP_CONFIG = {
 
 const PERMIT_TEXT = { width_padding: 10, height_padding: 10 };
 const permitCategories = {
-  Granted: [10, 1],
-  Rejected: [50, 99],
+  Granted: [20, 1],
+  Rejected: [70, 99],
 };
 
 const permitNames = Object.keys(permitCategories);
@@ -70,6 +70,8 @@ d3.csv("data/processed/demolitions.csv").then((data) => {
     d.crossed = false;
     d.skipOpacityChange = Math.random() < 0.01; // 5% chance to skip opacity change
     d.id = index;
+
+    d.date_of_demolition = new Date(d.date_of_demolition);
 
     d.offsetX = getRandomOffset(BUFFER_RANGE);
     d.offsetY = getRandomOffset(BUFFER_RANGE);
@@ -526,8 +528,7 @@ function initiateDemolitionNodes() {
             `<strong>Housing units:</strong> ${d.housing_units}<br>
             <strong>Locality:</strong> ${d.locality}<br>
             <strong>District:</strong> ${d.district}<br>
-            <strong>Lat:</strong> ${d.lat}<br>
-            <strong>Long:</strong> ${d.long}`
+            <strong>Date:</strong> ${d.date_of_demolition}`
           )
           .style("left", `${event.pageX + 10}px`) // Position tooltip near the mouse
           .style("top", `${event.pageY + 10}px`)
@@ -639,7 +640,9 @@ function clamp(num, min, max) {
  */
 function splitNodesLeftRight() {
   // **1. Assign random target positions**
-  assignTargetPositions(-10, 42.5);
+  const BOUNDS = { LEFT: -10, RIGHT: 42.5, TOP: 90, BOTTOM: 0 };
+
+  assignTargetPositions(BOUNDS.LEFT, BOUNDS.RIGHT);
 
   // **2. Update the force simulation**
   simulation
@@ -649,7 +652,9 @@ function splitNodesLeftRight() {
     )
     .force(
       "forceY",
-      d3.forceY((d) => walkY(getRandomNumberBetween(0, 90))).strength(0.2) // Spread vertically
+      d3
+        .forceY((d) => walkY(getRandomNumberBetween(BOUNDS.BOTTOM, BOUNDS.TOP)))
+        .strength(0.2) // Spread vertically
     )
     .alpha(0.75) // Ensure the simulation restarts effectively
     .restart();
@@ -665,9 +670,7 @@ function splitNodesLeftRight() {
     .attr(
       "transform",
       (d) =>
-        `translate(${walkX(permitCategories[d][0]) * ADJ_WIDTH}, ${
-          ADJ_HEIGHT / 1.3
-        })`
+        `translate(${walkX(permitCategories[d][0])}, ${walkY(BOUNDS.TOP - 5)})`
     )
     .each(function (d) {
       const g = d3.select(this);
@@ -689,8 +692,10 @@ function splitNodesLeftRight() {
         .attr("width", bbox.width + 2 * PERMIT_TEXT.width_padding)
         .attr("height", bbox.height + 2 * PERMIT_TEXT.height_padding);
     });
+}
 
-  svg.selectAll("g.permit-labels").style("visibility", "visible");
+function removePermitLabels() {
+  svg.selectAll("g.permit-labels").remove();
 }
 
 function drawMap() {
@@ -797,12 +802,14 @@ let activationFunctions = [
     hideIsraeliLines();
     hidePalestinianLines();
     initiateDemolitionNodes();
+    removePermitLabels();
   },
   () => {
     splitNodesLeftRight();
     hideMap();
   },
   () => {
+    removePermitLabels();
     drawMap();
   },
 ];
