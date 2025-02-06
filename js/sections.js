@@ -28,6 +28,14 @@ let STEP_CONFIG = {
   },
 };
 
+const PERMIT_TEXT = { width_padding: 10, height_padding: 10 };
+const permitCategories = {
+  Granted: [10, 1],
+  Rejected: [50, 99],
+};
+
+const permitNames = Object.keys(permitCategories);
+
 import { scroller } from "./scroller.js";
 
 // *******************
@@ -51,6 +59,8 @@ d3.csv("data/raw/palestinian_permits.csv").then((data) => {
 d3.csv("data/processed/demolitions.csv").then((data) => {
   // Convert column names to lowercase with underscores
 
+  const BUFFER_RANGE = 10;
+
   data.forEach((d, index) => {
     d.housing_units = Number(d.housing_units);
     d.minors_left_homeless = Number(d.minors_left_homeless);
@@ -60,6 +70,9 @@ d3.csv("data/processed/demolitions.csv").then((data) => {
     d.crossed = false;
     d.skipOpacityChange = Math.random() < 0.01; // 5% chance to skip opacity change
     d.id = index;
+
+    d.offsetX = getRandomOffset(BUFFER_RANGE);
+    d.offsetY = getRandomOffset(BUFFER_RANGE);
   });
 
   palestinianDemolitions = data;
@@ -183,6 +196,10 @@ class AnimatedLine {
 
 function getRandomNumberBetween(start, end) {
   return Math.random() * (end - start + 1) + start;
+}
+
+function getRandomOffset(range) {
+  return (Math.random() - 0.5) * 2 * range;
 }
 
 // *******************
@@ -340,7 +357,7 @@ function consolidatePalestinianLines() {
     }
 
     // Remove prior labels
-    svg.selectAll("text").remove();
+    svg.selectAll(".dubois-label").attr("display", "none");
 
     // Grab year info
     const years = palestinianPermits.map((d) => d.year);
@@ -350,7 +367,7 @@ function consolidatePalestinianLines() {
     // Append a new consolidated label
     svg
       .append("text")
-      .attr("class", "dubois-label")
+      .attr("class", "dubois-label-decade")
       .attr("x", walkX(15))
       .attr("y", walkY(consolidatedPathData[0].value + 3))
       .attr("text-anchor", "start")
@@ -395,8 +412,9 @@ function consolidatePalestinianLines() {
 function unconsolidatePalestinianLines() {
   STEP_CONFIG.Y_START = CORE_Y_START;
 
-  // Remove prior labels
-  svg.selectAll("text").remove();
+  // show prior labels, remove aggregate
+  svg.selectAll(".dubois-label").attr("display", "block");
+  svg.selectAll(".dubois-label-decade").attr("display", "none");
 
   palestinianPermits.forEach((d) => {
     const pathData = duBoisLine(
@@ -415,16 +433,6 @@ function unconsolidatePalestinianLines() {
       .transition()
       .duration(1000) // duration in milliseconds
       .attr("d", line(pathData));
-
-    // Append new individual label
-    svg
-      .append("text")
-      .attr("class", "dubois-label")
-      .attr("x", walkX(-6))
-      .attr("y", walkY(pathData[0].value - 1.5))
-      .attr("dy", "-0.5em") // Adjust vertical position (above the point)
-      .attr("fill", "black")
-      .text(`${d.year}`);
 
     if (d.permits > STEP_CONFIG.STEPS_UNTIL_TURN) {
       STEP_CONFIG.Y_START -=
@@ -458,7 +466,7 @@ function drawIsraeliLines() {
   // Append a new consolidated label
   svg
     .append("text")
-    .attr("class", "dubois-label")
+    .attr("class", "dubois-label-year")
     .attr("x", walkX(14.2))
     .attr("y", walkY(STEP_CONFIG.Y_START + 1.75))
     .attr("text-anchor", "start")
@@ -468,7 +476,7 @@ function drawIsraeliLines() {
 
 function hideIsraeliLines() {
   svg.selectAll(".israeli-line-path").attr("display", "none");
-  svg.selectAll(".dubois-label").attr("display", "none");
+  svg.selectAll(".dubois-label-year").attr("display", "none");
 }
 
 function hidePalestinianLines() {
@@ -476,6 +484,7 @@ function hidePalestinianLines() {
     svg.select(`.palestinian-${d.year}-line-path`).attr("display", "none");
   });
   svg.selectAll(".dubois-label").attr("display", "none");
+  svg.selectAll(".dubois-label-decade").attr("display", "none");
 }
 
 function initiateDemolitionNodes() {
@@ -603,20 +612,12 @@ function assignTargetPositions(
     if (d.skipOpacityChange) {
       // Left-moving node: randomize within [baseLeftX - BUFFER_X, baseLeftX + BUFFER_X]
       d.targetX = walkX(
-        clamp(
-          baseLeftX + getRandomNumberBetween(-BUFFER_LEFT, BUFFER_LEFT),
-          0,
-          100
-        )
+        baseLeftX + getRandomNumberBetween(-BUFFER_LEFT, BUFFER_LEFT)
       );
     } else {
       // Right-moving node: randomize within [baseRightX - BUFFER_X, baseRightX + BUFFER_X]
       d.targetX = walkX(
-        clamp(
-          baseRightX + getRandomNumberBetween(-BUFFER_RIGHT, BUFFER_RIGHT),
-          0,
-          100
-        )
+        baseRightX + getRandomNumberBetween(-BUFFER_RIGHT, BUFFER_RIGHT)
       );
     }
   });
@@ -638,7 +639,7 @@ function clamp(num, min, max) {
  */
 function splitNodesLeftRight() {
   // **1. Assign random target positions**
-  assignTargetPositions(-20, 50);
+  assignTargetPositions(-10, 42.5);
 
   // **2. Update the force simulation**
   simulation
@@ -652,6 +653,44 @@ function splitNodesLeftRight() {
     )
     .alpha(0.75) // Ensure the simulation restarts effectively
     .restart();
+
+  const permitLabels = svg.append("g").attr("class", "permit-labels");
+
+  permitLabels
+    .selectAll(".permit-label")
+    .data(permitNames)
+    .enter()
+    .append("g")
+    .attr("class", "permit-label")
+    .attr(
+      "transform",
+      (d) =>
+        `translate(${walkX(permitCategories[d][0]) * ADJ_WIDTH}, ${
+          ADJ_HEIGHT / 1.3
+        })`
+    )
+    .each(function (d) {
+      const g = d3.select(this);
+
+      // append text
+      const text = g
+        .append("text")
+        .text(`${d} (${permitCategories[d][1]}%)`)
+        .attr("class", "label-text");
+
+      // get the bounding box of the text
+      const bbox = text.node().getBBox();
+
+      // append rectangle behind the text
+      g.insert("rect", "text")
+        .attr("class", "label-rect")
+        .attr("x", bbox.x - PERMIT_TEXT.width_padding)
+        .attr("y", bbox.y - PERMIT_TEXT.height_padding)
+        .attr("width", bbox.width + 2 * PERMIT_TEXT.width_padding)
+        .attr("height", bbox.height + 2 * PERMIT_TEXT.height_padding);
+    });
+
+  svg.selectAll("g.permit-labels").style("visibility", "visible");
 }
 
 function drawMap() {
@@ -663,8 +702,8 @@ function drawMap() {
   const map = new mapboxgl.Map({
     container: "map",
     style: "mapbox://styles/mapbox/light-v11",
-    center: [35.250088, 31.95], // [lng, lat]
-    zoom: 7.9,
+    center: [35.1, 31.925], // [lng, lat]
+    zoom: 7.8,
   });
 
   // Add zoom and rotation controls to the map.
@@ -695,13 +734,15 @@ function initiateNodeTransition(map) {
       .attr(
         "x",
         (d) =>
-          map.project([d.long, d.lat]).x -
+          map.project([d.long, d.lat]).x +
+          d.offsetX -
           (d.housing_units ** 0.5 * RECT.WIDTH) / 2
       )
       .attr(
         "y",
         (d) =>
-          map.project([d.long, d.lat]).y -
+          map.project([d.long, d.lat]).y +
+          d.offsetY -
           (d.housing_units ** 0.5 * RECT.HEIGHT) / 2
       );
   }
@@ -714,13 +755,15 @@ function initiateNodeTransition(map) {
     .attr(
       "x",
       (d) =>
-        map.project([d.long, d.lat]).x -
+        map.project([d.long, d.lat]).x +
+        d.offsetX -
         (d.housing_units ** 0.5 * RECT.WIDTH) / 2
     )
     .attr(
       "y",
       (d) =>
-        map.project([d.long, d.lat]).y -
+        map.project([d.long, d.lat]).y +
+        d.offsetY -
         (d.housing_units ** 0.5 * RECT.HEIGHT) / 2
     )
     .on("end", () => {

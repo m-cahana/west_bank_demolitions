@@ -314,7 +314,9 @@ strong {
   fill: black;
 }
 
-.dubois-label {
+.dubois-label,
+.dubois-label-decade,
+.dubois-label-year {
   font-size: 12px; /* Sets the font size */
   text-anchor: middle; /* Centers the text horizontally */
   dominant-baseline: middle; /* Centers the text vertically */
