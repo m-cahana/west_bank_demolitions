@@ -3,8 +3,7 @@ let svg;
 let DOT_ADJUSTMENT_FACTOR = 1;
 let ADJ_WIDTH, ADJ_HEIGHT;
 let walkX, walkY, line, lineGroup;
-let palestinianPermits, palestinianDemolitions;
-
+let palestinianPermits, palestinianDemolitions, demolitionDates;
 let simulation, nodes;
 let mapSvg, mapContainer, nodesOverlay;
 
@@ -16,7 +15,7 @@ let HEIGHT = 500;
 let HEIGHT_WIDTH_RATIO = HEIGHT / WIDTH;
 
 const DOT = { RADIUS: 5, OPACITY: 0.5 };
-const RECT = { WIDTH: 5, HEIGHT: 5, OPACITY: 0.5 };
+const RECT = { WIDTH: 5, HEIGHT: 5, OPACITY: 0.5, DEMOLISHED_OPACITY: 0.1 };
 
 let CORE_Y_START = 100;
 let STEP_CONFIG = {
@@ -77,7 +76,11 @@ d3.csv("data/processed/demolitions.csv").then((data) => {
     d.offsetY = getRandomOffset(BUFFER_RANGE);
   });
 
-  palestinianDemolitions = data;
+  palestinianDemolitions = data.filter(
+    (d) => d.date_of_demolition >= new Date("2024-01-01")
+  );
+
+  console.log(palestinianDemolitions);
 });
 
 // *******************
@@ -527,8 +530,7 @@ function initiateDemolitionNodes() {
           .html(
             `<strong>Housing units:</strong> ${d.housing_units}<br>
             <strong>Locality:</strong> ${d.locality}<br>
-            <strong>District:</strong> ${d.district}<br>
-            <strong>Date:</strong> ${d.date_of_demolition}`
+            <strong>District:</strong> ${d.district}<br>`
           )
           .style("left", `${event.pageX + 10}px`) // Position tooltip near the mouse
           .style("top", `${event.pageY + 10}px`)
@@ -706,6 +708,76 @@ function showGrantedPermits() {
   nodes.attr("opacity", RECT.OPACITY);
 }
 
+const AnimationController = (function () {
+  let currentIndex = 0;
+  let isPaused = false;
+  let timeoutId = null;
+
+  // define speeds
+  const animationSpeed = 5000; // 5 seconds per plate
+
+  // function to add a point and update the map
+  function fadeBlocks(currentDate) {
+    const formattedDate = currentDate.toISOString().split("T")[0];
+
+    nodes.attr("opacity", (d) =>
+      d.date_of_demolition <= currentDate
+        ? RECT.DEMOLISHED_OPACITY
+        : RECT.OPACITY
+    );
+
+    d3.select("#map").select("#date-display").text(`Date: ${formattedDate}`);
+  }
+
+  // function to iterate through all dates
+  function iterateDates() {
+    if (currentIndex >= demolitionDates.length) {
+      // stop the animation when all dates have been processed
+      return;
+    }
+
+    const currentDate = demolitionDates[currentIndex];
+
+    // add points if any
+    fadeBlocks(currentDate);
+    currentIndex++;
+
+    // schedule the next iteration
+    timeoutId = setTimeout(() => {
+      if (!isPaused) {
+        iterateDates();
+      }
+    }, animationSpeed / demolitionDates.length);
+  }
+
+  return {
+    start: function () {
+      isPaused = false;
+
+      demolitionDates = [
+        ...new Set(palestinianDemolitions.map((d) => d.date_of_demolition)),
+      ].sort((a, b) => a - b);
+
+      console.log(demolitionDates);
+
+      currentIndex = 0;
+      iterateDates(demolitionDates);
+    },
+    pause: function () {
+      isPaused = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
+    },
+    resume: function () {
+      if (!isPaused) return;
+      isPaused = false;
+      iterateDates();
+    },
+  };
+})();
+
 function drawMap() {
   // Set your Mapbox access token
   mapboxgl.accessToken =
@@ -722,72 +794,176 @@ function drawMap() {
   // Add zoom and rotation controls to the map.
   map.addControl(new mapboxgl.NavigationControl());
 
+  // Select existing 'date-display' or create it if it doesn't exist
+  let dateDisplay = d3.select("#map").select("#date-display");
+  if (dateDisplay.empty()) {
+    dateDisplay = d3
+      .select("#map")
+      .append("div")
+      .attr("id", "date-display")
+      .style("position", "absolute")
+      .text(`Date: 2024-01-01`)
+      .style("display", "block");
+  } else {
+    // If it exists, ensure it's visible
+    dateDisplay.text(`Date: 2024-01-01`).style("display", "block");
+  }
+
   // Once the map loads, create an SVG overlay for D3 elements
-  map.on("load", () => {
-    // Save references to the map and overlay SVG for later use
-    // Since we're avoiding the window object, we'll manage these within closures or pass them as parameters
-    initiateNodeTransition(map);
+  map.on("load", async () => {
+    try {
+      // Await the completion of node transitions
+      await initiateNodeTransition(map);
+      // Start the animation after transitions are complete
+      AnimationController.start();
+    } catch (error) {
+      console.error("Error during node transition:", error);
+    }
   });
 }
+
 function hideMap() {
   // Select and hide only the map canvas(es)
   d3.select("#map").selectAll(".mapboxgl-canvas").style("display", "none");
+
+  d3.select("#map").select("#date-display").style("display", "none");
 
   d3.selectAll(
     ".mapboxgl-ctrl-container, .mapboxgl-ctrl, .mapboxgl-control"
   ).style("display", "none");
 }
 
-function initiateNodeTransition(map) {
-  // select existing nodes
-  const nodes = svg.selectAll("rect.nodes");
+/**
+ * calculates the number of columns and rows for a grid layout.
+ *
+ * @param {number} N - Number of tiles.
+ * @param {number} svgWidth - Width of the SVG.
+ * @param {number} svgHeight - Height of the SVG.
+ * @returns {Object} - Contains the number of columns, rows, and tile size.
+ */
+function calculateGridLayout(N, svgWidth, svgHeight) {
+  const aspectRatio = svgWidth / svgHeight;
 
-  function updateNodePositions() {
-    nodes
+  // Initial estimation of columns based on aspect ratio
+  let cols = Math.ceil(Math.sqrt(N * aspectRatio));
+  let rows = Math.ceil(N / cols);
+
+  // Adjust columns and rows to ensure all tiles fit
+  while (cols * rows < N) {
+    cols += 1;
+    rows = Math.ceil(N / cols);
+  }
+
+  // Calculate tile size based on grid layout
+  const tileWidth = svgWidth / cols;
+  const tileHeight = svgHeight / rows;
+
+  // Ensure tiles are squares by using the smaller dimension
+  const tileSize = Math.min(tileWidth, tileHeight);
+
+  return { cols, rows, tileSize };
+}
+/**
+ * tiles selection of nodes into a grid layout covering the entire SVG.
+ */
+function tileNodes() {
+  // number of nodes to display
+  const N = 40;
+
+  // temp: shuffle the nodes array and select the first N nodes
+  const shuffled = palestinianDemolitions
+    .slice()
+    .sort(() => 0.5 - Math.random());
+  const selectedNodes = shuffled.slice(0, N);
+
+  const { cols, rows, tileSize } = calculateGridLayout(
+    N,
+    ADJ_WIDTH,
+    ADJ_HEIGHT
+  );
+
+  // assign each selected node to a grid cell
+  selectedNodes.forEach((d, i) => {
+    const row = Math.floor(i / cols);
+    const col = i % cols;
+
+    // Calculate target position
+    d.tileTargetX = col * tileSize;
+    d.tileTargetY = row * tileSize;
+
+    // Set target size to tileSize
+    d.targetWidth = tileSize;
+    d.targetHeight = tileSize;
+  });
+
+  // select the tile nodes, render everything else invisible
+  const tiles = nodes.filter((d) => selectedNodes.includes(d));
+
+  nodes.filter((d) => !selectedNodes.includes(d)).attr("opacity", 0);
+
+  // 6. Transition selected nodes to their grid positions and sizes
+  tiles
+    .transition()
+    .duration(1000)
+    .attr("opacity", RECT.DEMOLISHED_OPACITY)
+    .style("stroke", "white")
+    .style("stroke-width", 1)
+    .attr("x", (d) => d.tileTargetX)
+    .attr("y", (d) => d.tileTargetY)
+    .attr("width", (d) => d.targetWidth)
+    .attr("height", (d) => d.targetHeight)
+    .on("end", function (event, d) {
+      // Optionally, you can handle post-transition logic here
+      // For example, highlight the tiled nodes
+      d3.select(this).classed("tiled", true);
+    });
+}
+
+function initiateNodeTransition(map) {
+  function setNodePositions(selection, map) {
+    selection
       .attr(
         "x",
         (d) =>
           map.project([d.long, d.lat]).x +
           d.offsetX -
-          (d.housing_units ** 0.5 * RECT.WIDTH) / 2
+          (Math.sqrt(d.housing_units) * RECT.WIDTH) / 2
       )
       .attr(
         "y",
         (d) =>
           map.project([d.long, d.lat]).y +
           d.offsetY -
-          (d.housing_units ** 0.5 * RECT.HEIGHT) / 2
+          (Math.sqrt(d.housing_units) * RECT.HEIGHT) / 2
       );
   }
 
-  // animate transition
-  nodes
-    .raise()
-    .transition()
-    .duration(2000) // Duration of the transition in milliseconds
-    .attr(
-      "x",
-      (d) =>
-        map.project([d.long, d.lat]).x +
-        d.offsetX -
-        (d.housing_units ** 0.5 * RECT.WIDTH) / 2
-    )
-    .attr(
-      "y",
-      (d) =>
-        map.project([d.long, d.lat]).y +
-        d.offsetY -
-        (d.housing_units ** 0.5 * RECT.HEIGHT) / 2
-    )
-    .on("end", () => {
-      console.log("Node transition to map completed.");
-    });
+  function updateNodePositions() {
+    setNodePositions(nodes, map);
+  }
 
-  simulation.stop();
-
-  // optional: Update node positions if map is moved later
+  // update node positions if map is moved later
   map.on("move", updateNodePositions);
   map.on("zoom", updateNodePositions);
+
+  // animate transition
+  return new Promise((resolve, reject) => {
+    nodes
+      .raise()
+      .transition()
+      .duration(2000)
+      // ensure proper widths and heights
+      .style("stroke", "black")
+      .attr("width", (d) => d.housing_units ** (1 / 2) * RECT.WIDTH)
+      .attr("height", (d) => d.housing_units ** (1 / 2) * RECT.HEIGHT)
+      .call(setNodePositions, map)
+      .on("end", () => {
+        console.log("Node transition to map completed.");
+        resolve();
+      });
+
+    simulation.stop();
+  });
 }
 
 // *******************
@@ -816,6 +992,7 @@ let activationFunctions = [
     splitNodesLeftRight();
     hideMap();
     showGrantedPermits();
+    AnimationController.pause();
   },
   () => {
     removePermitLabels();
@@ -824,6 +1001,8 @@ let activationFunctions = [
   },
   () => {
     hideMap();
+    tileNodes();
+    AnimationController.pause();
   },
 ];
 
