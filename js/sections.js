@@ -5,7 +5,11 @@ let ADJ_WIDTH, ADJ_HEIGHT;
 let walkX, walkY, line, lineGroup;
 let palestinianPermits, palestinianDemolitions, demolitionDates;
 let simulation, nodes;
-let mapSvg, mapContainer, nodesOverlay;
+let map, mapSvg, mapContainer;
+let fastConsolidate = false;
+let israeliLineRedraw = true;
+let mapGenerate = true;
+let nodesOverlay;
 
 let CORE_MARGIN = { LEFT: 150, RIGHT: 100, TOP: 50, BOTTOM: 20 };
 let CORE_XY_DOMAIN = { START: 0, END: 100 };
@@ -77,7 +81,7 @@ d3.csv("data/processed/demolitions.csv").then((data) => {
   });
 
   palestinianDemolitions = data.filter(
-    (d) => d.date_of_demolition >= new Date("2024-01-01")
+    (d) => d.date_of_demolition >= new Date("2023-01-01")
   );
 
   demolitionDates = [
@@ -387,7 +391,7 @@ function consolidatePalestinianLines() {
       svg
         .select(`.palestinian-${d.year}-line-path`)
         .transition()
-        .duration(1000) // duration in milliseconds
+        .duration(fastConsolidate ? 0 : 1000) // duration in milliseconds
         .attr(
           "d",
           line(
@@ -398,6 +402,7 @@ function consolidatePalestinianLines() {
           transitionsCompleted++;
           if (transitionsCompleted === totalTransitions) {
             // All transitions complete
+            fastConsolidate = true;
 
             if (consolidatedPermits > STEP_CONFIG.STEPS_UNTIL_TURN) {
               STEP_CONFIG.Y_START -=
@@ -419,6 +424,8 @@ function consolidatePalestinianLines() {
 }
 
 function unconsolidatePalestinianLines() {
+  fastConsolidate = false;
+  israeliLineRedraw = true;
   STEP_CONFIG.Y_START = CORE_Y_START;
 
   // show prior labels, remove aggregate
@@ -454,33 +461,43 @@ function unconsolidatePalestinianLines() {
 }
 
 function drawIsraeliLines() {
-  const yearlyIsraeliPermits = 2000;
-  const speedImprovementFactor = 2; // 2x faster than default
-  const israeliLine = new AnimatedLine(
-    lineGroup,
-    `israeli-line-path`,
-    "black",
-    [
-      yearlyIsraeliPermits / speedImprovementFactor,
-      STEP_CONFIG.LENGTH * speedImprovementFactor,
-      STEP_CONFIG.Y_START - 1,
-      STEP_CONFIG.Y_CHANGE,
-      false,
-      STEP_CONFIG.STEPS_UNTIL_TURN / speedImprovementFactor,
-    ], // generatorParams: totalSteps, stepLength, initialY, yChange, Increment
-    line,
-    0
-  );
+  if (!israeliLineRedraw) {
+    svg.selectAll(".dubois-label-year").attr("display", "block");
+    svg.selectAll(".israeli-line-path").attr("display", "block");
+    return; // Exit the function to prevent duplicate drawing
+  } else {
+    if (svg.select(".dubois-label-year").empty() === false) {
+      svg.select(".dubois-label-year").remove();
+      svg.select(".israeli-line-path").remove();
+    }
+    const yearlyIsraeliPermits = 2000;
+    const speedImprovementFactor = 2; // 2x faster than default
+    const israeliLine = new AnimatedLine(
+      lineGroup,
+      `israeli-line-path`,
+      "black",
+      [
+        yearlyIsraeliPermits / speedImprovementFactor,
+        STEP_CONFIG.LENGTH * speedImprovementFactor,
+        STEP_CONFIG.Y_START - 1,
+        STEP_CONFIG.Y_CHANGE,
+        false,
+        STEP_CONFIG.STEPS_UNTIL_TURN / speedImprovementFactor,
+      ], // generatorParams: totalSteps, stepLength, initialY, yChange, Increment
+      line,
+      0
+    );
 
-  // Append a new consolidated label
-  svg
-    .append("text")
-    .attr("class", "dubois-label-year")
-    .attr("x", walkX(14.2))
-    .attr("y", walkY(STEP_CONFIG.Y_START + 1.75))
-    .attr("text-anchor", "start")
-    .attr("fill", "black")
-    .text("Israeli permits granted in a single year");
+    // Append a new consolidated label
+    svg
+      .append("text")
+      .attr("class", "dubois-label-year")
+      .attr("x", walkX(14.2))
+      .attr("y", walkY(STEP_CONFIG.Y_START + 1.75))
+      .attr("text-anchor", "start")
+      .attr("fill", "black")
+      .text("Israeli permits granted in a single year");
+  }
 }
 
 function hideIsraeliLines() {
@@ -497,6 +514,8 @@ function hidePalestinianLines() {
 }
 
 function initiateDemolitionNodes() {
+  israeliLineRedraw = false;
+
   // **1. Remove existing nodes**
   svg.selectAll("rect.nodes").remove();
 
@@ -510,10 +529,6 @@ function initiateDemolitionNodes() {
 
   // **5. Define rectangle size**
   const RECT_SIZE = RECT.WIDTH; // Assuming RECT.WIDTH === RECT.HEIGHT
-
-  // Define centering margins (adjust based on your SVG size and desired centering)
-  const CENTERING_MARGIN_X = ADJ_WIDTH;
-  const CENTERING_MARGIN_Y = ADJ_HEIGHT;
 
   // **6. Create nodes as rectangles**
   nodes = svg
@@ -722,7 +737,11 @@ const AnimationController = (function () {
 
   // function to add a point and update the map
   function fadeBlocks(currentDate) {
-    const formattedDate = currentDate.toISOString().split("T")[0];
+    const formattedDate = currentDate
+      .toDateString()
+      .split(" ")
+      .slice(1)
+      .join(" ");
 
     nodes.attr("opacity", (d) =>
       d.date_of_demolition <= currentDate
@@ -776,21 +795,41 @@ const AnimationController = (function () {
 })();
 
 function drawMap() {
-  // Set your Mapbox access token
-  mapboxgl.accessToken =
-    "pk.eyJ1IjoibWljaGFlbC1jYWhhbmEiLCJhIjoiY202anoyYWs1MDB5NTJtcHdscXRpYWlmeSJ9.sKNNFh9wACNAHYN4ExzyWQ";
+  if (mapGenerate) {
+    // Set your Mapbox access token
+    mapboxgl.accessToken =
+      "pk.eyJ1IjoibWljaGFlbC1jYWhhbmEiLCJhIjoiY202anoyYWs1MDB5NTJtcHdscXRpYWlmeSJ9.sKNNFh9wACNAHYN4ExzyWQ";
 
-  // Initialize the Mapbox map
-  const map = new mapboxgl.Map({
-    container: "map",
-    style: "mapbox://styles/mapbox/light-v11",
-    center: [35.1, 31.925], // [lng, lat]
-    zoom: 7.8,
-  });
+    // Initialize the Mapbox map
+    map = new mapboxgl.Map({
+      container: "map",
+      style: "mapbox://styles/mapbox/light-v11",
+      center: [35.1, 31.925], // [lng, lat]
+      zoom: 7.8,
+    });
 
-  // Add zoom and rotation controls to the map.
-  map.addControl(new mapboxgl.NavigationControl());
+    // Add zoom and rotation controls to the map.
+    map.addControl(new mapboxgl.NavigationControl());
+  } else {
+    d3.select("#map").selectAll(".mapboxgl-canvas").style("display", "block");
 
+    d3.select("#map").select("#date-display").style("display", "block");
+
+    d3.selectAll(
+      ".mapboxgl-ctrl-container, .mapboxgl-ctrl, .mapboxgl-control"
+    ).style("display", "block");
+
+    (async () => {
+      try {
+        // Await the completion of node transitions
+        await initiateNodeTransition(map);
+        // Start the animation after transitions are complete
+        AnimationController.start();
+      } catch (error) {
+        console.error("Error during node transition:", error);
+      }
+    })();
+  }
   // Select existing 'date-display' or create it if it doesn't exist
   let dateDisplay = d3.select("#map").select("#date-display");
   if (dateDisplay.empty()) {
@@ -799,12 +838,24 @@ function drawMap() {
       .append("div")
       .attr("id", "date-display")
       .style("position", "absolute")
-      .text(`Date: ${demolitionDates[0].toISOString().split("T")[0]}`)
+      .text(
+        `Date: ${demolitionDates[0]
+          .toDateString()
+          .split(" ")
+          .slice(1)
+          .join(" ")}`
+      )
       .style("display", "block");
   } else {
     // If it exists, ensure it's visible
     dateDisplay
-      .text(`Date: ${demolitionDates[0].toISOString().split("T")[0]}`)
+      .text(
+        `Date: ${demolitionDates[0]
+          .toDateString()
+          .split(" ")
+          .slice(1)
+          .join(" ")}`
+      )
       .style("display", "block");
   }
 
@@ -895,6 +946,22 @@ function tileNodes() {
     d.targetHeight = tileSize;
   });
 
+  // Assuming 'svg' is your D3 selection of the SVG container
+  const defs = svg.append("defs");
+
+  // Define a pattern
+  defs
+    .append("pattern")
+    .attr("id", "tile-image") // Unique identifier for the pattern
+    .attr("patternUnits", "objectBoundingBox") // Ensure the pattern scales with the object
+    .attr("width", 1) // Pattern width as a fraction of the object bounding box
+    .attr("height", 1) // Pattern height as a fraction of the object bounding box
+    .append("image")
+    .attr("href", "images/khirbet_main_demolition.png") // Path to your image
+    .attr("preserveAspectRatio", "xMidYMid slice") // Adjust how the image scales within the pattern
+    .attr("width", 100) // Width of the image (pixels if objectBoundingBox units)
+    .attr("height", 100); // Height of the image (pixels if objectBoundingBox units)
+
   // select the tile nodes, render everything else invisible
   const tiles = nodes.filter((d) => selectedNodes.includes(d));
 
@@ -950,7 +1017,7 @@ function initiateNodeTransition(map) {
     nodes
       .raise()
       .transition()
-      .duration(2000)
+      .duration(1000)
       // ensure proper widths and heights
       .style("stroke", "black")
       .attr("width", (d) => d.housing_units ** (1 / 2) * RECT.WIDTH)
@@ -999,6 +1066,7 @@ let activationFunctions = [
     drawMap();
   },
   () => {
+    mapGenerate = false;
     hideMap();
     tileNodes();
     AnimationController.pause();
@@ -1008,8 +1076,8 @@ let activationFunctions = [
 // Initialize scroller
 let scroll = scroller().container(d3.select("#graphic"));
 scroll();
-let lastIndex,
-  activeIndex = 0;
+let lastIndex = 0;
+let activeIndex = 0;
 scroll.on("active", function (index) {
   activeIndex = index;
 
