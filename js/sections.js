@@ -80,6 +80,10 @@ d3.csv("data/processed/demolitions.csv").then((data) => {
     (d) => d.date_of_demolition >= new Date("2024-01-01")
   );
 
+  demolitionDates = [
+    ...new Set(palestinianDemolitions.map((d) => d.date_of_demolition)),
+  ].sort((a, b) => a - b);
+
   console.log(palestinianDemolitions);
 });
 
@@ -753,13 +757,6 @@ const AnimationController = (function () {
   return {
     start: function () {
       isPaused = false;
-
-      demolitionDates = [
-        ...new Set(palestinianDemolitions.map((d) => d.date_of_demolition)),
-      ].sort((a, b) => a - b);
-
-      console.log(demolitionDates);
-
       currentIndex = 0;
       iterateDates(demolitionDates);
     },
@@ -802,11 +799,13 @@ function drawMap() {
       .append("div")
       .attr("id", "date-display")
       .style("position", "absolute")
-      .text(`Date: 2024-01-01`)
+      .text(`Date: ${demolitionDates[0].toISOString().split("T")[0]}`)
       .style("display", "block");
   } else {
     // If it exists, ensure it's visible
-    dateDisplay.text(`Date: 2024-01-01`).style("display", "block");
+    dateDisplay
+      .text(`Date: ${demolitionDates[0].toISOString().split("T")[0]}`)
+      .style("display", "block");
   }
 
   // Once the map loads, create an SVG overlay for D3 elements
