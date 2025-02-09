@@ -81,7 +81,7 @@ d3.csv("data/processed/demolitions.csv").then((data) => {
   });
 
   palestinianDemolitions = data.filter(
-    (d) => d.date_of_demolition >= new Date("2023-01-01")
+    (d) => d.date_of_demolition >= new Date("2024-01-01")
   );
 
   demolitionDates = [
@@ -971,7 +971,8 @@ function tileNodes() {
   tiles
     .transition()
     .duration(1000)
-    .attr("opacity", RECT.DEMOLISHED_OPACITY)
+    .attr("opacity", RECT.OPACITY)
+    .style("fill", "url(#tile-image)")
     .style("stroke", "white")
     .style("stroke-width", 1)
     .attr("x", (d) => d.tileTargetX)
