@@ -150,6 +150,8 @@ export function assignTargetPositions(
       );
     }
   });
+
+  return palestinianDemolitions;
 }
 
 /**
@@ -158,23 +160,38 @@ export function assignTargetPositions(
 export function splitNodesLeftRight(
   simulation,
   svg,
-  permitNames,
+  mapContainer,
   walkX,
   walkY,
-  permitCategories,
   palestinianDemolitions,
   PERMIT_TEXT
 ) {
   // **1. Assign random target positions**
   const BOUNDS = { LEFT: -10, RIGHT: 42.5, TOP: 90, BOTTOM: 0 };
 
-  assignTargetPositions(
+  palestinianDemolitions = assignTargetPositions(
     palestinianDemolitions,
     BOUNDS.LEFT,
     BOUNDS.RIGHT,
     walkX,
     walkY
   );
+
+  const leftCenterX = d3.mean(
+    palestinianDemolitions.filter((d) => d.simulateGrant),
+    (d) => d.targetX
+  );
+  const rightCenterX = d3.mean(
+    palestinianDemolitions.filter((d) => !d.simulateGrant),
+    (d) => d.targetX
+  );
+
+  const permitCategories = {
+    Granted: [leftCenterX, 1],
+    Denied: [rightCenterX, 99],
+  };
+
+  const permitNames = Object.keys(permitCategories);
 
   // **2. Update the force simulation**
   simulation
@@ -191,7 +208,7 @@ export function splitNodesLeftRight(
     .alpha(0.75) // Ensure the simulation restarts effectively
     .restart();
 
-  const permitLabels = svg.append("g").attr("class", "permit-labels");
+  const permitLabels = mapContainer.append("g").attr("class", "permit-labels");
 
   permitLabels
     .selectAll(".permit-label")
@@ -201,8 +218,7 @@ export function splitNodesLeftRight(
     .attr("class", "permit-label")
     .attr(
       "transform",
-      (d) =>
-        `translate(${walkX(permitCategories[d][0])}, ${walkY(BOUNDS.TOP - 5)})`
+      (d) => `translate(${permitCategories[d][0]}, ${walkY(BOUNDS.TOP + 7.5)})`
     )
     .each(function (d) {
       const g = d3.select(this);

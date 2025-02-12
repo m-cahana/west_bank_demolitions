@@ -43,12 +43,6 @@ let STEP_CONFIG = {
 };
 
 const PERMIT_TEXT = { width_padding: 10, height_padding: 10 };
-const permitCategories = {
-  Granted: [20, 1],
-  Rejected: [70, 99],
-};
-
-const permitNames = Object.keys(permitCategories);
 
 const tileLocalities = (d) =>
   d.locality === "Masafer Yatta" ||
@@ -297,10 +291,9 @@ let activationFunctions = [
     splitNodesLeftRight(
       simulation,
       svg,
-      permitNames,
+      mapContainer,
       walkX,
       walkY,
-      permitCategories,
       palestinianDemolitions,
       PERMIT_TEXT
     );

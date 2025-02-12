@@ -14,7 +14,7 @@ export function getPalestinianPermits() {
     });
 
     const palestinianPermits = data.filter(
-      (d) => d.year > 2010 && d.year <= 2020
+      (d) => d.year >= 2010 && d.year <= 2019
     );
 
     return palestinianPermits;
@@ -43,9 +43,9 @@ export function loadDemolitionsData() {
       d.showOnMap = Math.random() < 0.1; // 10% chance
     });
 
-    // Filter out rows with demolition dates before January 1, 2011
+    // Filter out rows with demolition dates before January 1, 2010
     const palestinianDemolitions = data.filter(
-      (d) => d.date_of_demolition >= new Date("2011-01-01")
+      (d) => d.date_of_demolition >= new Date("2010-01-01")
     );
 
     // Extract and sort unique demolition dates
