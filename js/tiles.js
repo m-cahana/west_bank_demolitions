@@ -2,6 +2,10 @@
 // tile set up and functions
 // *******************
 
+import { demolitionImages } from "./demolition_imagery.js";
+
+import { cleanLocality } from "./helper_functions.js";
+
 export function rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN) {
   svg
     .attr("width", ADJ_WIDTH + MARGIN.LEFT + MARGIN.RIGHT)
@@ -74,73 +78,77 @@ export function tileNodes(
   palestinianDemolitions,
   ADJ_HEIGHT,
   nodes,
-  RECT
+  RECT,
+  tileLocalities
 ) {
-  // number of nodes to display
+  // Ensure hidden nodes (that are not marked for the map) are visible for tiling.
+  nodes.filter((d) => !d.showOnMap).style("display", "block");
+
+  // Number of nodes to display in the grid.
   const N = 9;
 
-  // shuffle the nodes array and select the first N nodes
-  const shuffled = palestinianDemolitions
-    .slice()
-    .sort(() => 0.5 - Math.random());
+  // Optionally shuffle or filter your nodes (here we filter using tileLocalities)
+  const selectedNodes = palestinianDemolitions.filter(tileLocalities);
 
-  const selectedNodesTwo = palestinianDemolitions.filter(
-    (d) =>
-      d.locality == "Masafer Yatta" ||
-      (d.locality == "a-Rakeez" && d.people_left_homeless == 12) ||
-      (d.locality == "al-Walajah" && d.people_left_homeless == 5) ||
-      (d.locality == "al-Walajah" && d.people_left_homeless == 5) ||
-      (d.locality == "Um al-Kheir" && d.people_left_homeless == 15)
-  );
-  const selectedNodes = shuffled.slice(0, N);
-
+  // Calculate grid layout (columns, rows, tile size) for the given dimensions.
   const { cols, rows, tileSize } = calculateGridLayout(
     N,
     ADJ_HEIGHT,
     ADJ_HEIGHT
   );
 
-  // assign each selected node to a grid cell
+  // Assign each selected node a target grid position and dimensions.
   selectedNodes.forEach((d, i) => {
     const row = Math.floor(i / cols);
     const col = i % cols;
-
-    // Calculate target position
     d.tileTargetX = col * tileSize;
     d.tileTargetY = row * tileSize;
-
-    // Set target size to tileSize
     d.targetWidth = tileSize;
     d.targetHeight = tileSize;
   });
 
-  // Define the pattern
+  // Create the <defs> block for SVG patterns.
   const defs = svg.append("defs");
 
-  defs
-    .append("pattern")
-    .attr("id", "tile-image") // Unique identifier for the pattern
-    .attr("patternUnits", "objectBoundingBox") // Scale pattern relative to the tile
-    .attr("patternContentUnits", "objectBoundingBox") // Scale content relative to the pattern
-    .attr("width", 1) // Full width of the bounding box
-    .attr("height", 1) // Full height of the bounding box
-    .append("image")
-    .attr("href", "images/khirbet_main_demolition.jpg") // Path to your image
-    .attr("preserveAspectRatio", "xMidYMid slice") // Adjust how the image scales within the pattern
-    .attr("width", 1) // Full width of the pattern
-    .attr("height", 1); // Full height of the pattern
+  // Get the unique localities from the selected nodes.
+  const uniqueLocalities = Array.from(
+    new Set(selectedNodes.map((d) => d.locality))
+  );
 
-  // Select the tile nodes and hide others
+  // For each locality, create a pattern using the exact locality name.
+  uniqueLocalities.forEach((locality) => {
+    // Retrieve the image data from the mapping.
+    const imgData = demolitionImages[locality];
+
+    // Use a fallback image if the mapping is missing an entry.
+    const imgFile = imgData ? imgData[0] : "default_placeholder.jpeg";
+
+    console.log(`${cleanLocality(locality)}: ${imgFile}`);
+
+    defs
+      .append("pattern")
+      .attr("id", `tile-image-${cleanLocality(locality)}`)
+      .attr("patternUnits", "objectBoundingBox")
+      .attr("patternContentUnits", "objectBoundingBox")
+      .attr("width", 1)
+      .attr("height", 1)
+      .append("image")
+      .attr("href", `images/${imgFile}`)
+      .attr("preserveAspectRatio", "xMidYMid slice")
+      .attr("width", 1)
+      .attr("height", 1);
+  });
+
+  // Select the tile nodes based on the selectedNodes array and hide others.
   const tiles = nodes.filter((d) => selectedNodes.includes(d));
-
   nodes.filter((d) => !selectedNodes.includes(d)).attr("opacity", 0);
 
-  // Transition selected nodes to their grid positions and sizes
+  // Animate the selected nodes to their grid positions and apply the pattern fill.
   tiles
     .transition()
     .duration(1000)
-    .attr("opacity", RECT.OPACITY)
-    .style("fill", "url(#tile-image)") // Apply the pattern fill
+    .attr("opacity", RECT.TILE_OPACITY)
+    .style("fill", (d) => `url(#tile-image-${cleanLocality(d.locality)})`)
     .style("stroke", "white")
     .style("stroke-width", 1)
     .attr("x", (d) => d.tileTargetX)
@@ -148,7 +156,7 @@ export function tileNodes(
     .attr("width", (d) => d.targetWidth)
     .attr("height", (d) => d.targetHeight)
     .on("end", function (event, d) {
-      // Optionally, handle post-transition logic here
+      // Optionally handle any post-transition logic here.
       d3.select(this).classed("tiled", true);
     });
 

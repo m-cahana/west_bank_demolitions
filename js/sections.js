@@ -24,7 +24,13 @@ let WIDTH = 800;
 let HEIGHT = 500;
 let HEIGHT_WIDTH_RATIO = HEIGHT / WIDTH;
 
-const RECT = { WIDTH: 5, HEIGHT: 5, OPACITY: 0.5, DEMOLISHED_OPACITY: 0.1 };
+const RECT = {
+  WIDTH: 5,
+  HEIGHT: 5,
+  OPACITY: 0.5,
+  DEMOLISHED_OPACITY: 0.1,
+  TILE_OPACITY: 0.7,
+};
 
 let CORE_Y_START = 100;
 let STEP_CONFIG = {
@@ -43,6 +49,16 @@ const permitCategories = {
 };
 
 const permitNames = Object.keys(permitCategories);
+
+const tileLocalities = (d) =>
+  d.locality === "Masafer Yatta" ||
+  (d.locality === "a-Rakeez" && d.people_left_homeless === 12) ||
+  (d.locality === "al-Walajah" && d.people_left_homeless === 14) ||
+  (d.locality === "Um al-Kheir" && d.people_left_homeless === 15) ||
+  (d.locality === "Khan al-Ahmar (Bedouin Community)" &&
+    d.people_left_homeless === 16) ||
+  (d.locality === "Kh. Jenbah" && d.people_left_homeless === 13) ||
+  (d.locality === "Kh. Ma'in" && d.people_left_homeless === 7);
 
 // *******************
 // function imports
@@ -313,7 +329,14 @@ let activationFunctions = [
     svg = boxSVG(svg, MARGIN, ADJ_WIDTH, ADJ_HEIGHT);
     mapGenerate = false;
     hideMap();
-    nodes = tileNodes(svg, palestinianDemolitions, ADJ_HEIGHT, nodes, RECT);
+    nodes = tileNodes(
+      svg,
+      palestinianDemolitions,
+      ADJ_HEIGHT,
+      nodes,
+      RECT,
+      tileLocalities
+    );
   },
 ];
 

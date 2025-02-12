@@ -1,3 +1,7 @@
+// *******************
+// general helper function
+// *******************
+
 /**
  * Samples a percentage of items from an array.
  * @param {Array} array - The array to sample from.
@@ -34,4 +38,8 @@ export function getRandomNumberBetween(start, end) {
  */
 export function clamp(num, min, max) {
   return Math.max(min, Math.min(max, num));
+}
+
+export function cleanLocality(string) {
+  return string.replace(/'/g, "").replace(/\s+/g, "-").replace(/['()]/g, "");
 }

@@ -14,7 +14,7 @@ export const AnimationController = function (demolitionDates, nodes, RECT) {
     const formattedYear = currentDate.getFullYear();
 
     nodes.attr("opacity", (d) =>
-      d.date_of_demolition <= currentDate
+      d.date_of_demolition <= currentDate && d.showOnMap
         ? RECT.DEMOLISHED_OPACITY
         : RECT.OPACITY
     );
@@ -174,6 +174,8 @@ export function hideMap() {
 }
 
 export function initiateNodeTransition(nodes, map, RECT, simulation) {
+  nodes.filter((d) => !d.showOnMap).style("display", "none");
+
   function setNodePositions(selection, map) {
     selection
       .attr(
