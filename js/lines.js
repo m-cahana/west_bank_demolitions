@@ -33,7 +33,6 @@ export function duBoisLine(
 
 export class AnimatedLine {
   /**
-   *
    * @param {d3.selection} lineGroup - The group element to append the path.
    * @param {string} className - Class name for the path.
    * @param {string} color - Stroke color for the path.
@@ -41,7 +40,6 @@ export class AnimatedLine {
    * @param {d3.line} lineGenerator - D3 line generator function.
    * @param {string} labelText - Optional text to display at the start of the line.
    * @param {number} animationSpeed - Optional animation speed in ms.
-   *
    */
   constructor(
     lineGroup,
@@ -56,8 +54,8 @@ export class AnimatedLine {
     strokeWidth = 3
   ) {
     this.data = [];
-    this.generatorData = duBoisLine(...generatorParams); // Now an array
-    this.currentIndex = 0; // To track the animation progress
+    this.generatorData = duBoisLine(...generatorParams);
+    this.currentIndex = 0;
     this.path = lineGroup
       .append("path")
       .attr("class", className)
@@ -70,28 +68,28 @@ export class AnimatedLine {
     this.labelText = labelText;
     this.animationSpeed = animationSpeed;
 
-    this.text = null; // Placeholder for the text element
-    this.timeoutId = null; // To store the setTimeout ID
+    this.text = null;
+    this.timeoutId = null;
 
-    // Initialize with the first point if labelText is provided
+    // If labelText is provided, initialize with the first point.
     if (this.labelText && this.generatorData.length > 0) {
       const firstPoint = this.generatorData[this.currentIndex];
       this.data.push(firstPoint);
       this.path.datum(this.data).attr("d", this.lineGenerator(this.data));
       this.currentIndex++;
 
-      // Append the text element at the starting point
+      // Append the label at the starting point.
       this.text = lineGroup
         .append("text")
         .attr("class", "dubois-label")
         .attr("x", walkX(-6))
         .attr("y", walkY(firstPoint.value - 1.5))
-        .attr("dy", "-0.5em") // Adjust vertical position (above the point)
-        .attr("fill", color) // Match the line color or choose another
+        .attr("dy", "-0.5em")
+        .attr("fill", color)
         .text(this.labelText);
     }
 
-    this.animate(); // Start the animation
+    this.animate();
   }
 
   animate() {
@@ -102,9 +100,24 @@ export class AnimatedLine {
       this.data.push(point);
       this.path.datum(this.data).attr("d", this.lineGenerator(this.data));
 
-      // Store the timeout ID to allow stopping the animation
+      // Schedule the next step.
       this.timeoutId = setTimeout(() => this.animate(), this.animationSpeed);
     }
+  }
+
+  // Add a flush method to render the remaining points immediately.
+  flush() {
+    if (this.timeoutId !== null) {
+      clearTimeout(this.timeoutId);
+      this.timeoutId = null;
+    }
+    while (this.currentIndex < this.generatorData.length) {
+      const point = this.generatorData[this.currentIndex];
+      this.data.push(point);
+      this.currentIndex++;
+    }
+    // Update the line one final time.
+    this.path.datum(this.data).attr("d", this.lineGenerator(this.data));
   }
 
   /**
@@ -124,7 +137,8 @@ export function consolidatePalestinianLines(
   walkY,
   CORE_Y_START,
   fastConsolidate,
-  line
+  line,
+  lineLabelOffset
 ) {
   return new Promise((resolve, reject) => {
     palestinianPermits.forEach((d) => {
@@ -162,15 +176,16 @@ export function consolidatePalestinianLines(
 
     // Grab year info
     const years = palestinianPermits.map((d) => d.year);
-    const yearStart = d3.min(years);
-    const yearEnd = d3.max(years);
+
+    const firstPoint = consolidatedPathData[0];
+    const baseX = walkX(firstPoint.step); // Dynamically compute the x position
 
     // Append a new consolidated label
     svg
       .append("text")
       .attr("class", "dubois-label-decade")
-      .attr("x", walkX(15))
-      .attr("y", walkY(consolidatedPathData[0].value + 3))
+      .attr("x", baseX + lineLabelOffset)
+      .attr("y", walkY(firstPoint.value + 3))
       .attr("text-anchor", "start")
       .attr("fill", "black")
       .text("Permits granted to Palestinians in a decade");
@@ -267,12 +282,14 @@ export function drawIsraeliLines(
   walkY,
   lineGroup,
   line,
-  STEP_CONFIG
+  STEP_CONFIG,
+  israeliLine,
+  lineLabelOffset
 ) {
   if (!israeliLineRedraw) {
     svg.selectAll(".dubois-label-year").attr("display", "block");
     svg.selectAll(".israeli-line-path").attr("display", "block");
-    return; // Exit the function to prevent duplicate drawing
+    return israeliLine; // Exit the function to prevent duplicate drawing
   } else {
     if (svg.select(".dubois-label-year").empty() === false) {
       svg.select(".dubois-label-year").remove();
@@ -280,7 +297,7 @@ export function drawIsraeliLines(
     }
     const yearlyIsraeliPermits = 2000;
     const speedImprovementFactor = 2; // 2x faster than default
-    const israeliLine = new AnimatedLine(
+    israeliLine = new AnimatedLine(
       lineGroup,
       `israeli-line-path`,
       "black",
@@ -298,15 +315,21 @@ export function drawIsraeliLines(
       0
     );
 
+    const israeliLineData = d3.select(".israeli-line-path").datum();
+    const firstIsraeliPoint = israeliLineData[0];
+    const baseXYear = walkX(firstIsraeliPoint.step);
+
     // Append a new consolidated label
     svg
       .append("text")
       .attr("class", "dubois-label-year")
-      .attr("x", walkX(14.2))
+      .attr("x", baseXYear + lineLabelOffset * 1.27)
       .attr("y", walkY(STEP_CONFIG.Y_START + 1.75))
       .attr("text-anchor", "start")
       .attr("fill", "black")
-      .text("Permits granted to Israelis in a single year");
+      .text("Permits granted to Israeli settlers in a single year");
+
+    return israeliLine;
   }
 }
 

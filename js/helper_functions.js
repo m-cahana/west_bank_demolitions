@@ -43,3 +43,50 @@ export function clamp(num, min, max) {
 export function cleanLocality(string) {
   return string.replace(/'/g, "").replace(/\s+/g, "-").replace(/['()]/g, "");
 }
+
+// Create a pausable queue for iterating with a delay.
+export function createPausableQueue(array, callback) {
+  let i = 0;
+  let paused = false;
+  let timeoutId = null;
+
+  function iterate() {
+    if (i < array.length) {
+      if (!paused) {
+        const d = array[i];
+        callback(d, i, array);
+        const delay = d.permits ? Math.max(30, d.permits * 30) : 30;
+        i++;
+        timeoutId = setTimeout(iterate, delay);
+      }
+    }
+  }
+
+  function pause() {
+    paused = true;
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+      timeoutId = null;
+    }
+  }
+
+  function resume() {
+    if (paused) {
+      paused = false;
+      iterate();
+    }
+  }
+
+  // flush immediately processes any remaining items.
+  function flush() {
+    pause(); // Cancel any scheduled iterate.
+    while (i < array.length) {
+      callback(array[i], i, array);
+      i++;
+    }
+  }
+
+  iterate();
+
+  return { pause, resume, flush };
+}

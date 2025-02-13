@@ -15,7 +15,9 @@ let fastConsolidate = false;
 let israeliLineRedraw = true;
 let mapGenerate = true;
 let nodesOverlay;
-let animationController;
+let animationController, animatedQueue;
+let animatedLines = [];
+let israeliLine;
 
 let CORE_MARGIN = { LEFT: 150, RIGHT: 100, TOP: 50, BOTTOM: 20 };
 let CORE_XY_DOMAIN = { START: 0, END: 100 };
@@ -23,6 +25,7 @@ let MARGIN = { LEFT: 150, RIGHT: 100, TOP: 50, BOTTOM: 20 };
 let WIDTH = 800;
 let HEIGHT = 500;
 let HEIGHT_WIDTH_RATIO = HEIGHT / WIDTH;
+let lineLabelOffset = 50;
 
 const RECT = {
   WIDTH: 5,
@@ -76,9 +79,11 @@ import {
   removePermitLabels,
   hideGrantedPermits,
   showGrantedPermits,
+  attachTooltip,
 } from "./demolition_nodes.js";
 import { AnimationController, drawMap, hideMap } from "./map.js";
 import { rectSVG, boxSVG, tileNodes } from "./tiles.js";
+import { createPausableQueue } from "./helper_functions.js";
 
 // *******************
 // data read-in
@@ -167,8 +172,8 @@ function drawInitial() {
     iterate();
   }
 
-  forEachWithVariableDelay(palestinianPermits, (d) => {
-    new AnimatedLine(
+  animatedQueue = createPausableQueue(palestinianPermits, (d) => {
+    let lineInstance = new AnimatedLine(
       lineGroup,
       `palestinian-${d.year}-line-path`,
       "black",
@@ -185,6 +190,8 @@ function drawInitial() {
       line,
       d.year
     );
+
+    animatedLines.push(lineInstance);
 
     if (d.permits > STEP_CONFIG.STEPS_UNTIL_TURN) {
       STEP_CONFIG.Y_START -=
@@ -248,6 +255,8 @@ let activationFunctions = [
   },
   () => {},
   () => {
+    animatedQueue.flush();
+
     fastConsolidate = consolidatePalestinianLines(
       palestinianPermits,
       STEP_CONFIG,
@@ -256,21 +265,25 @@ let activationFunctions = [
       walkY,
       CORE_Y_START,
       fastConsolidate,
-      line
+      line,
+      lineLabelOffset
     ).then(() => {
-      drawIsraeliLines(
+      israeliLine = drawIsraeliLines(
         israeliLineRedraw,
         svg,
         walkX,
         walkY,
         lineGroup,
         line,
-        STEP_CONFIG
+        STEP_CONFIG,
+        israeliLine,
+        lineLabelOffset
       );
     });
     hideDemolitionNodes(svg);
   },
   () => {
+    israeliLine.flush();
     hideIsraeliLines(svg);
     hidePalestinianLines(palestinianPermits, svg);
     ({ simulation, nodes, israeliLineRedraw } = initiateDemolitionNodes(
@@ -301,6 +314,7 @@ let activationFunctions = [
     showGrantedPermits(nodes, RECT);
     animationController = AnimationController(demolitionDates, nodes, RECT);
     animationController.pause();
+    nodes = attachTooltip(nodes, tooltip, false);
   },
   () => {
     removePermitLabels(svg);
@@ -314,6 +328,7 @@ let activationFunctions = [
       simulation,
       animationController
     ));
+    // nodes = attachTooltip(nodes, tooltip, true);
     svg = rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN);
   },
   () => {

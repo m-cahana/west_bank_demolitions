@@ -141,7 +141,12 @@ export function tileNodes(
 
   // Select the tile nodes based on the selectedNodes array and hide others.
   const tiles = nodes.filter((d) => selectedNodes.includes(d));
-  nodes.filter((d) => !selectedNodes.includes(d)).attr("opacity", 0);
+  nodes
+    .filter((d) => !selectedNodes.includes(d))
+    .attr("opacity", 0)
+    .on("mouseover.tooltip", null)
+    .on("mousemove.tooltip", null)
+    .on("mouseout.tooltip", null);
 
   // Animate the selected nodes to their grid positions and apply the pattern fill.
   tiles

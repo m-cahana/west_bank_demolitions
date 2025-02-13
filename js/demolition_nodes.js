@@ -253,3 +253,38 @@ export function hideGrantedPermits(nodes, RECT) {
 export function showGrantedPermits(nodes, RECT) {
   nodes.attr("opacity", RECT.OPACITY);
 }
+
+// A helper that attaches tooltip events with or without the extra info.
+export function attachTooltip(nodes, tooltip, includeExtra = false) {
+  nodes
+    .on("mouseover.tooltip", function (event, d) {
+      // Create the base tooltip content.
+      let content = `<strong>Housing units:</strong> ${d.housing_units}<br>
+                     <strong>Locality:</strong> ${d.locality}<br>
+                     <strong>District:</strong> ${d.district}<br>`;
+      // Conditionally add people_left_homeless.
+      if (includeExtra && d.people_left_homeless !== undefined) {
+        content += `<strong>People left homeless:</strong> ${d.people_left_homeless}<br>`;
+      }
+
+      tooltip
+        .html(content)
+        .style("left", `${event.pageX + 10}px`)
+        .style("top", `${event.pageY + 10}px`)
+        .classed("visible", true);
+
+      // Optionally, add a highlighted class.
+      d3.select(this).classed("highlighted", true);
+    })
+    .on("mousemove.tooltip", function (event) {
+      tooltip
+        .style("left", `${event.pageX + 10}px`)
+        .style("top", `${event.pageY + 10}px`);
+    })
+    .on("mouseout.tooltip", function () {
+      tooltip.classed("visible", false);
+      d3.select(this).classed("highlighted", false);
+    });
+
+  return nodes;
+}
