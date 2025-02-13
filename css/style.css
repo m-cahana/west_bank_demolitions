@@ -491,6 +491,18 @@ strong {
     font-size: 12px;
     fill: black;
   }
+
+  .dubois-line,
+  .israeli-line-path,
+  [class^="palestinian-"] {
+    stroke-width: 2px;
+  }
+
+  .dubois-label,
+  .dubois-label-decade,
+  .dubois-label-year {
+    font-size: 10px !important;
+  }
 }
 
 /* even smaller  */
@@ -504,6 +516,12 @@ strong {
   .x-label,
   .y-label {
     font-size: 14px;
+  }
+
+  .dubois-line,
+  .israeli-line-path,
+  [class^="palestinian-"] {
+    stroke-width: 1px;
   }
 }
 

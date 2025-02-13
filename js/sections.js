@@ -55,7 +55,12 @@ const tileLocalities = (d) =>
   (d.locality === "Khan al-Ahmar (Bedouin Community)" &&
     d.people_left_homeless === 16) ||
   (d.locality === "Kh. Jenbah" && d.people_left_homeless === 13) ||
-  (d.locality === "Kh. Ma'in" && d.people_left_homeless === 7);
+  (d.locality === "Kh. Ma'in" && d.people_left_homeless === 7) ||
+  (d.locality === "Kh. Humsah" &&
+    d.people_left_homeless === 11 &&
+    d.minors_left_homeless === 6 &&
+    d.date_of_demolition.getTime() === new Date("2021-02-01").getTime()) ||
+  (d.locality === "Yatta" && d.people_left_homeless === 38);
 
 // *******************
 // function imports
@@ -84,6 +89,11 @@ import {
 import { AnimationController, drawMap, hideMap } from "./map.js";
 import { rectSVG, boxSVG, tileNodes } from "./tiles.js";
 import { createPausableQueue } from "./helper_functions.js";
+import {
+  updateDimensions,
+  redrawGraphics,
+  debounce,
+} from "./dynamic_scaling.js";
 
 // *******************
 // data read-in
@@ -95,7 +105,7 @@ async function initialize() {
     palestinianPermits = await getPalestinianPermits();
 
     // Load Demolitions
-    const demolitionsData = await loadDemolitionsData();
+    const demolitionsData = await loadDemolitionsData(tileLocalities);
     palestinianDemolitions = demolitionsData.palestinianDemolitions;
     demolitionDates = demolitionsData.demolitionDates;
 
@@ -114,6 +124,56 @@ initialize();
 
 // Initialize tooltip once
 const tooltip = d3.select("body").append("div").attr("class", "tooltip");
+
+// Call updateDimensions and then update the graphics
+function handleResize() {
+  ({
+    ADJ_WIDTH,
+    ADJ_HEIGHT,
+    WIDTH,
+    HEIGHT,
+    HEIGHT_WIDTH_RATIO,
+    CORE_MARGIN,
+    RECT_ADJUSTMENT_FACTOR,
+    walkX,
+    walkY,
+    MARGIN,
+    svg,
+  } = updateDimensions(
+    ADJ_WIDTH,
+    ADJ_HEIGHT,
+    WIDTH,
+    HEIGHT,
+    HEIGHT_WIDTH_RATIO,
+    CORE_MARGIN,
+    RECT_ADJUSTMENT_FACTOR,
+    walkX,
+    walkY,
+    MARGIN,
+    svg
+  ));
+
+  // Re-render elements that depend on the updated scales and dimensions
+  redrawGraphics({
+    animatedLines,
+    svg,
+    walkX,
+    walkY,
+    ADJ_WIDTH,
+    ADJ_HEIGHT,
+    line,
+    lineLabelOffset,
+    STEP_CONFIG,
+    nodes,
+    RECT,
+    RECT_ADJUSTMENT_FACTOR,
+    CORE_XY_DOMAIN,
+    map,
+    simulation,
+    PERMIT_TEXT,
+    palestinianDemolitions,
+  });
+}
 
 function drawInitial() {
   const container = document.getElementById("vis");
@@ -209,10 +269,13 @@ function drawInitial() {
     .attr("transform", `translate(${MARGIN.LEFT}, ${MARGIN.TOP})`);
 
   // Append a div for Mapbox inside the map container
-  mapContainer
+  svg
     .append("foreignObject")
     .attr("width", ADJ_WIDTH)
     .attr("height", ADJ_HEIGHT)
+    .attr("x", 0)
+    .attr("y", MARGIN.TOP)
+    .attr("class", "map-foreignobject")
     .append("xhtml:div")
     .attr("id", "map") // This div will host the Mapbox map
     .style("position", "relative")
@@ -232,6 +295,9 @@ function drawInitial() {
 
   // Create a dedicated group for D3 nodes within the overlay SVG
   nodesOverlay = mapSvg.append("g").attr("class", "nodes-overlay");
+
+  handleResize();
+  window.addEventListener("resize", debounce(handleResize, 10));
 }
 
 // *******************
@@ -303,12 +369,13 @@ let activationFunctions = [
   () => {
     splitNodesLeftRight(
       simulation,
-      svg,
-      mapContainer,
+      mapSvg,
       walkX,
       walkY,
       palestinianDemolitions,
-      PERMIT_TEXT
+      PERMIT_TEXT,
+      CORE_XY_DOMAIN,
+      RECT_ADJUSTMENT_FACTOR
     );
     hideMap();
     showGrantedPermits(nodes, RECT);
@@ -328,7 +395,7 @@ let activationFunctions = [
       simulation,
       animationController
     ));
-    // nodes = attachTooltip(nodes, tooltip, true);
+    nodes = attachTooltip(nodes, tooltip, true);
     svg = rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN);
   },
   () => {
@@ -337,14 +404,7 @@ let activationFunctions = [
     svg = boxSVG(svg, MARGIN, ADJ_WIDTH, ADJ_HEIGHT);
     mapGenerate = false;
     hideMap();
-    nodes = tileNodes(
-      svg,
-      palestinianDemolitions,
-      ADJ_HEIGHT,
-      nodes,
-      RECT,
-      tileLocalities
-    );
+    nodes = tileNodes(svg, palestinianDemolitions, ADJ_HEIGHT, nodes, RECT);
   },
 ];
 

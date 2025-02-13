@@ -78,8 +78,7 @@ export function tileNodes(
   palestinianDemolitions,
   ADJ_HEIGHT,
   nodes,
-  RECT,
-  tileLocalities
+  RECT
 ) {
   // Ensure hidden nodes (that are not marked for the map) are visible for tiling.
   nodes.filter((d) => !d.showOnMap).style("display", "block");
@@ -88,7 +87,7 @@ export function tileNodes(
   const N = 9;
 
   // Optionally shuffle or filter your nodes (here we filter using tileLocalities)
-  const selectedNodes = palestinianDemolitions.filter(tileLocalities);
+  const selectedNodes = palestinianDemolitions.filter((d) => d.tileNode);
 
   // Calculate grid layout (columns, rows, tile size) for the given dimensions.
   const { cols, rows, tileSize } = calculateGridLayout(

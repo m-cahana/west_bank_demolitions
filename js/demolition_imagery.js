@@ -34,4 +34,9 @@ export const demolitionImages = {
     "Keren Manor, Activestills",
     "January 8th, 2021",
   ],
+  "Kh. Humsah": [
+    "khirbet_humsah_demolition.jpeg",
+    "Sarit Michaeli, B’Tselem",
+    "December 2020",
+  ],
 };

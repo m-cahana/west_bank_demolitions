@@ -83,7 +83,7 @@ export function drawMap(
       container: "map",
       style: "mapbox://styles/mapbox/light-v11",
       center: [35.1, 31.925], // [lng, lat]
-      zoom: 7.8,
+      zoom: 7,
     });
 
     // Add zoom and rotation controls to the map.

@@ -50,7 +50,7 @@ export function initiateDemolitionNodes(
         tooltip
           .html(
             `<strong>Housing units:</strong> ${d.housing_units}<br>
-            <strong>Locality:</strong> ${d.locality}<br>
+            <strong>Locality:</strong> ${d.locality_cleaned}<br>
             <strong>District:</strong> ${d.district}<br>`
           )
           .style("left", `${event.pageX + 10}px`) // Position tooltip near the mouse
@@ -89,8 +89,8 @@ export function initiateDemolitionNodes(
         .forceX((d) =>
           walkX(
             getRandomNumberBetween(
-              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * -1,
-              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 5
+              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 1,
+              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
             )
           )
         )
@@ -133,7 +133,6 @@ export function assignTargetPositions(
   baseLeftX,
   baseRightX,
   walkX,
-  walkY,
   BUFFER_LEFT = 2,
   BUFFER_RIGHT = 30
 ) {
@@ -159,37 +158,41 @@ export function assignTargetPositions(
  */
 export function splitNodesLeftRight(
   simulation,
-  svg,
-  mapContainer,
+  mapSvg,
   walkX,
   walkY,
   palestinianDemolitions,
-  PERMIT_TEXT
+  PERMIT_TEXT,
+  CORE_XY_DOMAIN,
+  RECT_ADJUSTMENT_FACTOR
 ) {
+  const BUFFER_LEFT = 2;
+  const BUFFER_RIGHT = 30;
   // **1. Assign random target positions**
-  const BOUNDS = { LEFT: -10, RIGHT: 42.5, TOP: 90, BOTTOM: 0 };
+  const BOUNDS = {
+    LEFT: ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 10) * 1 - BUFFER_LEFT,
+    RIGHT:
+      ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 10) * 10 - BUFFER_RIGHT,
+    TOP: 90,
+    BOTTOM: 0,
+  };
 
   palestinianDemolitions = assignTargetPositions(
     palestinianDemolitions,
     BOUNDS.LEFT,
     BOUNDS.RIGHT,
     walkX,
-    walkY
-  );
-
-  const leftCenterX = d3.mean(
-    palestinianDemolitions.filter((d) => d.simulateGrant),
-    (d) => d.targetX
-  );
-  const rightCenterX = d3.mean(
-    palestinianDemolitions.filter((d) => !d.simulateGrant),
-    (d) => d.targetX
+    BUFFER_LEFT,
+    BUFFER_RIGHT
   );
 
   const permitCategories = {
-    Granted: [leftCenterX, 1],
-    Denied: [rightCenterX, 99],
+    Granted: [walkX(BOUNDS.LEFT), 1],
+    Denied: [walkX(BOUNDS.RIGHT), 99],
   };
+
+  console.log(`walkX(BOUNDS.LEFT): ${walkX(BOUNDS.LEFT)}`);
+  console.log(`walkX(BOUNDS.RIGHT): ${walkX(BOUNDS.RIGHT)}`);
 
   const permitNames = Object.keys(permitCategories);
 
@@ -208,7 +211,7 @@ export function splitNodesLeftRight(
     .alpha(0.75) // Ensure the simulation restarts effectively
     .restart();
 
-  const permitLabels = mapContainer.append("g").attr("class", "permit-labels");
+  const permitLabels = mapSvg.append("g").attr("class", "permit-labels");
 
   permitLabels
     .selectAll(".permit-label")
@@ -216,29 +219,40 @@ export function splitNodesLeftRight(
     .enter()
     .append("g")
     .attr("class", "permit-label")
+    // Position the group at the desired center
     .attr(
       "transform",
-      (d) => `translate(${permitCategories[d][0]}, ${walkY(BOUNDS.TOP + 7.5)})`
+      (d) =>
+        `translate(${permitCategories[d][0]}, ${walkY(
+          BOUNDS.TOP + 7.5 / RECT_ADJUSTMENT_FACTOR
+        )})`
     )
     .each(function (d) {
       const g = d3.select(this);
 
-      // append text
-      const text = g
+      // Append text at (0,0) and center it
+      const textEl = g
         .append("text")
+        .attr("text-anchor", "middle") // centers horizontally relative to x = 0
+        .attr("dominant-baseline", "middle") // centers vertically relative to y = 0
         .text(`${d} (${permitCategories[d][1]}%)`)
         .attr("class", "label-text");
 
-      // get the bounding box of the text
-      const bbox = text.node().getBBox();
+      // Ensure the text is rendered. In case the font hasn't loaded yet,
+      // you might consider wrapping the measurement in a setTimeout.
+      const textNode = textEl.node();
+      const textWidth = textNode.getComputedTextLength();
+      const bbox = textNode.getBBox();
+      const rectWidth = textWidth + 2 * PERMIT_TEXT.width_padding;
+      const rectHeight = bbox.height + 2 * PERMIT_TEXT.height_padding;
 
-      // append rectangle behind the text
+      // Instead of setting x and y offsets on the rectangle,
+      // insert it at (0,0) and apply a transform to shift it by half its width/height.
       g.insert("rect", "text")
         .attr("class", "label-rect")
-        .attr("x", bbox.x - PERMIT_TEXT.width_padding)
-        .attr("y", bbox.y - PERMIT_TEXT.height_padding)
-        .attr("width", bbox.width + 2 * PERMIT_TEXT.width_padding)
-        .attr("height", bbox.height + 2 * PERMIT_TEXT.height_padding);
+        .attr("width", rectWidth)
+        .attr("height", rectHeight)
+        .attr("transform", `translate(-${rectWidth / 2}, -${rectHeight / 2})`);
     });
 }
 
@@ -260,7 +274,7 @@ export function attachTooltip(nodes, tooltip, includeExtra = false) {
     .on("mouseover.tooltip", function (event, d) {
       // Create the base tooltip content.
       let content = `<strong>Housing units:</strong> ${d.housing_units}<br>
-                     <strong>Locality:</strong> ${d.locality}<br>
+                     <strong>Locality:</strong> ${d.locality_cleaned}<br>
                      <strong>District:</strong> ${d.district}<br>`;
       // Conditionally add people_left_homeless.
       if (includeExtra && d.people_left_homeless !== undefined) {

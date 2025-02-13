@@ -20,7 +20,8 @@ export function getPalestinianPermits() {
     return palestinianPermits;
   });
 }
-export function loadDemolitionsData() {
+
+export function loadDemolitionsData(tileLocalities) {
   return d3.csv("data/processed/demolitions.csv").then((data) => {
     const BUFFER_RANGE = 10;
 
@@ -44,9 +45,15 @@ export function loadDemolitionsData() {
     });
 
     // Filter out rows with demolition dates before January 1, 2010
-    const palestinianDemolitions = data.filter(
-      (d) => d.date_of_demolition >= new Date("2010-01-01")
-    );
+    data = data.filter((d) => d.date_of_demolition >= new Date("2010-01-01"));
+
+    const palestinianDemolitions = data.map((d) => {
+      // Check condition and assign new column accordingly
+      const tileNode = tileLocalities(d);
+      return { ...d, tileNode };
+    });
+
+    console.log(palestinianDemolitions);
 
     // Extract and sort unique demolition dates
     const demolitionDates = [
