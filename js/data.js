@@ -50,7 +50,7 @@ export function loadDemolitionsData(tileLocalities) {
     const palestinianDemolitions = data.map((d) => {
       // Check condition and assign new column accordingly
       const tileNode = tileLocalities(d);
-      return { ...d, tileNode };
+      return { ...d, tileNode, showOnMap: tileNode ? true : d.showOnMap };
     });
 
     console.log(palestinianDemolitions);

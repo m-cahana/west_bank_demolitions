@@ -29,7 +29,7 @@ export const demolitionImages = {
     "Keren Manor, Activestills",
     "January 8th, 2021",
   ],
-  "Masafer Yatta": [
+  "Kh. al-Markez": [
     "masafer_yatta_demolition.jpeg",
     "Keren Manor, Activestills",
     "January 8th, 2021",
@@ -38,5 +38,10 @@ export const demolitionImages = {
     "khirbet_humsah_demolition.jpeg",
     "Sarit Michaeli, B’Tselem",
     "December 2020",
+  ],
+  "'Ein Samia": [
+    "ein_samia_demolition.jpeg",
+    "Basel Adra, 972 Magazine",
+    "May 23, 2023",
   ],
 };

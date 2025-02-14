@@ -51,7 +51,7 @@ let STEP_CONFIG = {
 const PERMIT_TEXT = { width_padding: 10, height_padding: 10 };
 
 const tileLocalities = (d) =>
-  d.locality === "Masafer Yatta" ||
+  (d.locality === "Kh. al-Markez" && d.people_left_homeless == 12) ||
   (d.locality === "a-Rakeez" && d.people_left_homeless === 12) ||
   (d.locality === "al-Walajah" && d.people_left_homeless === 14) ||
   (d.locality === "Um al-Kheir" && d.people_left_homeless === 15) ||
@@ -63,7 +63,10 @@ const tileLocalities = (d) =>
     d.people_left_homeless === 11 &&
     d.minors_left_homeless === 6 &&
     d.date_of_demolition.getTime() === new Date("2021-02-01").getTime()) ||
-  (d.locality === "Yatta" && d.people_left_homeless === 38);
+  (d.locality === "Yatta" && d.people_left_homeless === 38) ||
+  (d.locality === "'Ein Samia" &&
+    d.people_left_homeless === 8 &&
+    d.minors_left_homeless == 6);
 
 // *******************
 // function imports
