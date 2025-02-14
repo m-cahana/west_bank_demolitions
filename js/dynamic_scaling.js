@@ -179,6 +179,7 @@ export function redrawGraphics({
   simulation,
   PERMIT_TEXT,
   palestinianDemolitions,
+  activeIndex,
 }) {
   // [1] Update animated lines and other SVG elements
   animatedLines.forEach((instance) => {
@@ -281,7 +282,8 @@ export function redrawGraphics({
 
   // [4] Update tileNodes layout based on the new dimensions.
   // Make sure to pass your data array for Palestinian demolitions.
-  if (palestinianDemolitions && nodes) {
+  if (palestinianDemolitions && nodes && activeIndex == 6) {
+    simulation.stop();
     tileNodes(svg, palestinianDemolitions, ADJ_HEIGHT, nodes, RECT);
   }
 

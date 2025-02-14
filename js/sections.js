@@ -19,6 +19,9 @@ let animationController, animatedQueue;
 let animatedLines = [];
 let israeliLine;
 
+let lastIndex = 0;
+let activeIndex = 0;
+
 let CORE_MARGIN = { LEFT: 150, RIGHT: 100, TOP: 50, BOTTOM: 20 };
 let CORE_XY_DOMAIN = { START: 0, END: 100 };
 let MARGIN = { LEFT: 150, RIGHT: 100, TOP: 50, BOTTOM: 20 };
@@ -172,6 +175,7 @@ function handleResize() {
     simulation,
     PERMIT_TEXT,
     palestinianDemolitions,
+    activeIndex,
   });
 }
 
@@ -411,10 +415,11 @@ let activationFunctions = [
 // Initialize scroller
 let scroll = scroller().container(d3.select("#graphic"));
 scroll();
-let lastIndex = 0;
-let activeIndex = 0;
+
 scroll.on("active", function (index) {
   activeIndex = index;
+
+  console.log(`activeIndex: ${activeIndex}`);
 
   let sign = activeIndex - lastIndex < 0 ? -1 : 1;
   let scrolledSections = d3.range(lastIndex + sign, activeIndex + sign, sign);
