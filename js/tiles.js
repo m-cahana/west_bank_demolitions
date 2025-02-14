@@ -160,9 +160,143 @@ export function tileNodes(
     .attr("width", (d) => d.targetWidth)
     .attr("height", (d) => d.targetHeight)
     .on("end", function (event, d) {
-      // Optionally handle any post-transition logic here.
       d3.select(this).classed("tiled", true);
     });
+
+  // Add click event to each tile node to open a pop-up.
+  // When a tile is clicked, remove any existing pop-up, then create a new one.
+  // The pop-up window size will be twice the tile's width/height
+  // and will be centered relative to the entire grid.
+  // Add click event to each tile node to open a pop-up.
+  tiles.on("click", function (event, d) {
+    // Remove any open pop-up.
+    svg.selectAll(".tile-popup").remove();
+
+    // Retrieve the SVG's dimensions.
+    const svgWidth = parseFloat(svg.attr("width"));
+    const svgHeight = parseFloat(svg.attr("height"));
+
+    // Calculate the grid dimensions.
+    // (Assuming your grid uses N=9 tiles, arranged as computed by calculateGridLayout)
+    const gridWidth = cols * tileSize;
+    const gridHeight = rows * tileSize;
+
+    // Compute the offsets so that the grid is centered within the SVG.
+    const gridOffsetX = (svgWidth - gridWidth) / 2;
+    const gridOffsetY = (svgHeight - gridHeight) / 2;
+
+    // Determine the center of the grid (the center of the 9 nodes).
+    const centerX = gridOffsetX + gridWidth / 2;
+    const centerY = gridOffsetY + gridHeight / 2;
+
+    // Define the pop-up dimensions: 2x the tile's width & height.
+    const popupWidth = 2 * tileSize;
+    const popupHeight = 2 * tileSize;
+
+    // Calculate top-left coordinates for the pop-up so that it is centered.
+    const popupX = centerX - popupWidth / 2;
+    const popupY = centerY - popupHeight / 2;
+
+    // Append a group element for the pop-up.
+    const popup = svg.append("g").attr("class", "tile-popup");
+
+    // Pop-up background (a white window with rounded corners).
+    popup
+      .append("rect")
+      .attr("x", popupX)
+      .attr("y", popupY)
+      .attr("width", popupWidth)
+      .attr("height", popupHeight)
+      .attr("fill", "white")
+      .attr("stroke", "black")
+      .attr("rx", 10)
+      .attr("ry", 10);
+
+    // Define margins for the image and text areas.
+    const imageMargin = 10;
+    const textMargin = 10;
+
+    // Calculate the image area dimensions (top 60% of the pop-up, inset by imageMargin).
+    const imageAreaX = popupX + imageMargin;
+    const imageAreaY = popupY + imageMargin;
+    const imageAreaWidth = popupWidth - 2 * imageMargin;
+    const imageAreaHeight = popupHeight * 0.6 - 2 * imageMargin;
+
+    // Retrieve the image file for this node.
+    const imgData = demolitionImages[d.locality];
+    const imgFile = imgData ? imgData[0] : "default_placeholder.jpeg";
+
+    // Append the image for the top portion.
+    popup
+      .append("image")
+      .attr("href", `images/${imgFile}`)
+      .attr("x", imageAreaX)
+      .attr("y", imageAreaY)
+      .attr("width", imageAreaWidth)
+      .attr("height", imageAreaHeight)
+      .attr("preserveAspectRatio", "xMidYMid slice");
+
+    // Calculate text area dimensions (bottom 40% of the pop-up, inset by textMargin).
+    const textAreaX = popupX + textMargin;
+    const textAreaY = popupY + popupHeight * 0.6 + textMargin;
+    const textAreaWidth = popupWidth - 2 * textMargin;
+    const textAreaHeight = popupHeight * 0.4 - 2 * textMargin;
+
+    // Append a foreignObject element so the text area can scroll.
+    popup
+      .append("foreignObject")
+      .attr("x", textAreaX)
+      .attr("y", textAreaY)
+      .attr("width", textAreaWidth)
+      .attr("height", textAreaHeight)
+      .append("xhtml:div")
+      .style("width", "100%")
+      .style("height", "100%")
+      .style("overflow-y", "auto")
+      .style("font-size", "14px")
+      .style("color", "black")
+      .style("padding", "5px").html(`
+      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus eget semper ipsum. Vestibulum velit justo, dapibus a lorem sed, dictum ultricies sem. Vivamus vel hendrerit erat, quis malesuada tellus. Donec ac tincidunt dolor, id lobortis magna.</p>
+      <p>Sed sed mauris et risus semper dapibus. Curabitur id nibh a justo vestibulum mattis. Fusce ut nisi sapien. Praesent tincidunt fermentum risus, in sodales tortor elementum ac. Sed nec commodo nulla. Nam condimentum volutpat enim, in aliquam justo cursus a.</p>
+      <p>Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Integer auctor turpis in cursus consequat. Nam pretium leo eu est commodo, ac dapibus odio aliquet. Sed mollis blandit elit at ultrices.</p>
+      <p>Proin imperdiet erat vel mi vehicula, eu dictum dolor commodo. Donec suscipit scelerisque leo, a pharetra mauris imperdiet nec. Nulla facilisi. Vivamus tristique bibendum massa, sit amet facilisis orci dapibus vitae.</p>
+      <p>Donec euismod vitae ante ut venenatis. Vestibulum laoreet ex non quam feugiat, a molestie risus blandit. Suspendisse potenti. Nulla facilisi. Duis ultricies elit ac eros consequat, in bibendum neque faucibus.</p>
+    `);
+
+    // Define a size for the close (X) button.
+    const closeButtonSize = 20;
+
+    // Append a rectangle as a background for the close button in the top-right corner.
+    popup
+      .append("rect")
+      .attr("class", "popup-close-btn")
+      .attr("x", popupX + popupWidth - closeButtonSize - 5)
+      .attr("y", popupY + 5)
+      .attr("width", closeButtonSize)
+      .attr("height", closeButtonSize)
+      .attr("fill", "#ccc")
+      .attr("stroke", "black")
+      .attr("rx", 3)
+      .attr("ry", 3)
+      .style("cursor", "pointer")
+      .on("click", function () {
+        svg.selectAll(".tile-popup").remove();
+      });
+
+    // Append an "X" text on top of the close button.
+    popup
+      .append("text")
+      .attr("x", popupX + popupWidth - closeButtonSize / 2 - 5)
+      .attr("y", popupY + closeButtonSize / 2 + 5)
+      .attr("text-anchor", "middle")
+      .attr("dominant-baseline", "middle")
+      .text("X")
+      .attr("fill", "black")
+      .style("cursor", "pointer")
+      .on("click", function () {
+        svg.selectAll(".tile-popup").remove();
+      });
+  });
 
   return nodes;
 }
