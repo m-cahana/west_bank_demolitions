@@ -71,7 +71,9 @@ export function drawMap(
   nodes,
   RECT,
   simulation,
-  animationController
+  animationController,
+  palestinianDemolitions,
+  RECT_ADJUSTMENT_FACTOR
 ) {
   if (mapGenerate) {
     // Set your Mapbox access token
@@ -102,6 +104,7 @@ export function drawMap(
         // Await the completion of node transitions
         await initiateNodeTransition(nodes, map, RECT, simulation);
 
+        adjustMapBounds();
         // Start the animation after transitions are complete
         animationController.start();
       } catch (error) {
@@ -132,7 +135,9 @@ export function drawMap(
     const bounds = new mapboxgl.LngLatBounds();
 
     // extract coordinates
-    const coordinates = palestinianDemolitions.map((d) => [d.long, d.lat]);
+    const coordinates = palestinianDemolitions
+      .filter((d) => d.showOnMap)
+      .map((d) => [d.long, d.lat]);
 
     coordinates.forEach((coord) => {
       bounds.extend(coord);
@@ -140,7 +145,7 @@ export function drawMap(
 
     // fit the map to the calculated bounds with padding
     map.fitBounds(bounds, {
-      padding: 50 * DOT_ADJUSTMENT_FACTOR,
+      padding: 50 * RECT_ADJUSTMENT_FACTOR,
       duration: 1000, // duration in milliseconds for the animation
       essential: true, // ensure animation is not affected by user preferences
     });
@@ -151,6 +156,8 @@ export function drawMap(
     try {
       // Await the completion of node transitions
       await initiateNodeTransition(nodes, map, RECT, simulation);
+
+      adjustMapBounds();
 
       // Start the animation after transitions are complete
       animationController.start();

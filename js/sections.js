@@ -397,7 +397,9 @@ let activationFunctions = [
       nodes,
       RECT,
       simulation,
-      animationController
+      animationController,
+      palestinianDemolitions,
+      RECT_ADJUSTMENT_FACTOR
     ));
     nodes = attachTooltip(nodes, tooltip, true);
     svg = rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN);
