@@ -62,25 +62,6 @@ svg {
   z-index: 10;
 }
 
-#vis {
-  display: block;
-  position: fixed;
-  z-index: 10;
-  height: auto;
-  width: 100%;
-  max-width: 1000px;
-  flex: 2;
-  margin-left: 200px;
-  top: 0px;
-}
-
-/* static class */
-#vis.static {
-  position: absolute;
-  top: auto;
-  left: auto;
-}
-
 .step {
   margin-bottom: 0px;
   min-height: 700px;
@@ -341,6 +322,25 @@ strong {
     width: 800px;
     height: 500px;
   }
+
+  #vis {
+    display: block;
+    position: fixed;
+    z-index: 10;
+    height: auto;
+    width: 100%;
+    max-width: 1000px;
+    flex: 2;
+    margin-left: 200px;
+    top: 0px;
+  }
+
+  /* static class */
+  #vis.static {
+    position: absolute;
+    top: auto;
+    left: auto;
+  }
 }
 
 .down-arrow {
@@ -425,26 +425,33 @@ strong {
   }
 
   #vis {
+    display: block;
+    position: fixed;
+    z-index: 10;
+    height: auto;
+    flex: 2;
     margin-left: 0;
     margin-right: 0;
-    width: 90%; /* adjust width for better fit on small screens */
     max-width: 800px;
+    width: 100vw;
     top: 50%;
-    transform: translate(-50%, -50%); /* Center horizontally and vertically */
-    left: 50%; /* Position from the center */
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+
+  /* Override for static state to preserve centering */
+  #vis.static {
+    position: absolute;
+    margin-left: 0px;
+    /* Use viewport units to ensure centering relative to the viewport */
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
   }
 
   #vis svg {
     width: 100%;
     margin: 0 auto;
-  }
-
-  #vis.static {
-    width: 100%;
-    max-width: none;
-    left: 0;
-    top: 50%;
-    transform: translateY(-50%);
   }
 
   #map-container {
