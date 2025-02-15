@@ -140,8 +140,9 @@ export function tileNodes(
 
   // Select the tile nodes based on the selectedNodes array and hide others.
   const tiles = nodes.filter((d) => selectedNodes.includes(d));
+
   nodes
-    .filter((d) => !selectedNodes.includes(d))
+    .filter((d) => !d.tileNode)
     .attr("opacity", 0)
     .on("mouseover.tooltip", null)
     .on("mousemove.tooltip", null)

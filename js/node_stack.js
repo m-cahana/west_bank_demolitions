@@ -1,155 +1,176 @@
 // *******************
-// mapbox set up and functions
+// stack nodes by year to show homelessness
 // *******************
 
-export function stackNodesByDistrict() {
-  // Aggregate data by district
+export function stackNodes(
+  palestinianDemolitions,
+  svg,
+  ADJ_WIDTH,
+  ADJ_HEIGHT,
+  nodes,
+  RECT
+) {
+  // --- Aggregate Data ---
   const aggregatedData = d3.rollups(
     palestinianDemolitions,
     (v) => d3.sum(v, (d) => d.people_left_homeless),
-    (d) => d.district // Grouping by 'district'
+    (d) => d.date_of_demolition.getFullYear()
   );
+  // For quick look-up of the aggregated sum for each year:
+  const aggregatedMap = new Map(aggregatedData);
+  // Sort years in ascending order
+  aggregatedData.sort((a, b) => d3.ascending(a[0], b[0]));
 
-  // Sort data by the number of people left homeless (descending)
-  aggregatedData.sort((a, b) => d3.descending(a[1], b[1]));
-
-  // Set dimensions for the bar chart
-  const margin = { top: 50, right: 30, bottom: 100, left: 60 };
+  // --- Chart Dimensions and Scales ---
+  const margin = { top: 50, right: 30, bottom: 50, left: 200 };
   const width = ADJ_WIDTH - margin.left - margin.right;
   const height = ADJ_HEIGHT - margin.top - margin.bottom;
 
-  // Remove existing bar chart if any
-  svg.selectAll(".bar-chart").remove();
-
-  // Append a new group for the bar chart
-  const barChart = svg
-    .append("g")
-    .attr("class", "bar-chart")
-    .attr("transform", `translate(${margin.left},${margin.top})`);
-
-  // Set up scales
+  // x-scale: maps years (as numbers) to bands
   const x = d3
     .scaleBand()
     .domain(aggregatedData.map((d) => d[0]))
     .range([0, width])
     .padding(0.2);
 
+  // y-scale: maps aggregated homelessness values to vertical pixel positions
   const y = d3
     .scaleLinear()
-    .domain([0, d3.max(aggregatedData, (d) => d[1]) * 1.1])
+    .domain([0, d3.max(aggregatedData, (d) => d[1])])
     .nice()
     .range([height, 0]);
 
-  // Add X axis
-  barChart
-    .append("g")
-    .attr("transform", `translate(0,${height})`)
-    .call(d3.axisBottom(x))
-    .selectAll("text")
-    .attr("transform", "translate(-10,0)rotate(-45)")
-    .style("text-anchor", "end");
+  // --- Create or Update the Bar Chart Group and Axes ---
+  // Check if a group with class "bar-chart" already exists.
+  let barChart = svg.select(".bar-chart");
 
-  // Add Y axis
-  barChart.append("g").call(d3.axisLeft(y));
+  if (barChart.empty()) {
+    // Create the group and translate it by the margins so that (0,0) is the top-left
+    // corner of the chart (not the full SVG).
+    barChart = svg
+      .append("g")
+      .attr("class", "bar-chart")
+      .attr("transform", `translate(${margin.left},${margin.top})`);
 
-  // Add Y axis label
-  barChart
-    .append("text")
-    .attr("transform", "rotate(-90)")
-    .attr("y", -margin.left + 15)
-    .attr("x", -height / 2)
-    .attr("dy", "-1.5em")
-    .style("text-anchor", "middle")
-    .text("Number of People Left Homeless");
+    // Append X axis group.
+    barChart
+      .append("g")
+      .attr("class", "x-axis")
+      .attr("transform", `translate(0, ${height})`)
+      .call(d3.axisBottom(x))
+      .selectAll("text")
+      .attr("transform", "translate(-10,0)rotate(-45)")
+      .style("text-anchor", "end");
 
-  // Add X axis label
-  barChart
-    .append("text")
-    .attr("x", width / 2)
-    .attr("y", height + margin.bottom - 40)
-    .style("text-anchor", "middle")
-    .text("Districts");
+    // Append Y axis group.
+    barChart.append("g").attr("class", "y-axis").call(d3.axisLeft(y));
 
-  // Create a group for each bar (district)
-  const barGroups = barChart
-    .selectAll(".bar-group")
-    .data(aggregatedData)
-    .enter()
-    .append("g")
-    .attr("class", "bar-group")
-    .attr("transform", (d) => `translate(${x(d[0])},0)`);
+    // Append y-axis label.
+    barChart
+      .append("text")
+      .attr("class", "y-label")
+      .attr("transform", "rotate(-90)")
+      .attr("x", -height / 2)
+      .attr("y", -margin.top * 1.2) // Fixed offset; adjust as needed.
+      .attr("dy", "1em")
+      .style("text-anchor", "middle")
+      .text("People Left Homeless");
 
-  // Group nodes by district
-  const nodesByDistrict = d3.group(palestinianDemolitions, (d) => d.district);
+    // Append x-axis label.
+    barChart
+      .append("text")
+      .attr("class", "x-label")
+      .attr("x", width / 2)
+      .attr("y", height + margin.bottom * 1.1) // Adjust based on bottom margin.
+      .style("text-anchor", "middle")
+      .text("Year");
+  } else {
+    // If the group already exists, update scales and simply make sure these elements are visible.
+    barChart
+      .selectAll(".x-axis, .y-axis, .x-label, .y-label")
+      .style("display", "block")
+      .style("opacity", 1);
+  }
 
-  // Define a scale for stacking nodes vertically within bars
-  const stackScale = d3
-    .scaleLinear()
-    .domain([0, d3.max(aggregatedData, (d) => d[1])])
-    .range([height, 0]);
-
-  // Position existing nodes within the bar chart
+  // --- Reparent the Nodes ---
+  // If the nodes (e.g., rectangles or other elements) were previously appended to svg,
+  // move (or reparent) them into the barChart group so that they use the same coordinate system.
+  // --- Reparent only non-tile nodes ---
   nodes
-    .attr("display", "none") // Hide nodes initially
-    .filter((d) => d.district) // Ensure district exists
-    .each(function (d) {
-      // Select the corresponding bar group
-      const barGroup = barChart
-        .selectAll(".bar-group")
-        .filter(function (barData) {
-          return barData[0] === d.district;
-        });
+    .filter((d) => !d.tileNode)
+    .each(function () {
+      barChart.node().appendChild(this);
+    });
 
-      if (!barGroup.empty()) {
-        // Calculate the y-position based on cumulative people left homeless
-        const cumulativeData = nodesByDistrict
-          .get(d.district)
-          .filter((nd) => nd.people_left_homeless <= d.people_left_homeless);
-        const cumulativeSum = d3.sum(
-          cumulativeData,
-          (nd) => nd.people_left_homeless
-        );
+  // --- Stack the Nodes by Year ---
+  // Now that nodes share the same coordinate system (the bar chart group), position them.
+  const nodeElements = nodes.nodes();
+  const nodesByYear = d3.group(nodeElements, (el) =>
+    el.__data__.date_of_demolition.getFullYear()
+  );
 
-        // Define the position within the bar
-        const barY =
-          y(cumulativeSum) -
-          (Math.sqrt(d.people_left_homeless) * RECT.HEIGHT) / 2;
+  nodesByYear.forEach((elements, year) => {
+    // Optionally sort nodes within the group.
+    elements.sort((a, b) =>
+      d3.ascending(
+        a.__data__.people_left_homeless,
+        b.__data__.people_left_homeless
+      )
+    );
 
-        // Position the node within the bar
-        d3.select(this)
-          .attr("x", x(d.district) + x.bandwidth() / 4) // Center within the bar
-          .attr("y", margin.top + barY)
-          .attr("width", x.bandwidth() / 2)
-          .attr("height", Math.sqrt(d.people_left_homeless) * RECT.HEIGHT)
-          .attr("fill", "#404080")
-          .attr("opacity", 0.6)
-          .attr("display", "block"); // Show the node
-      }
-    })
-    .on("mouseover", function (event, d) {
-      tooltip
-        .html(
-          `<strong>District:</strong> ${d.district}<br>
-             <strong>People Left Homeless:</strong> ${d.people_left_homeless}<br>`
-        )
-        .style("left", `${event.pageX + 10}px`)
-        .style("top", `${event.pageY + 10}px`)
-        .classed("visible", true);
+    // Sum of the square roots of people_left_homeless for this year.
+    const totalSqrt = d3.sum(elements, (el) =>
+      Math.sqrt(el.__data__.people_left_homeless)
+    );
 
-      // Highlight the node
-      d3.select(this).classed("highlighted", true);
-    })
-    .on("mousemove", function (event) {
-      // Update tooltip position as the mouse moves
-      tooltip
-        .style("left", `${event.pageX + 10}px`)
-        .style("top", `${event.pageY + 10}px`);
-    })
-    .on("mouseout", function () {
-      // Hide the tooltip when mouse moves away
-      tooltip.classed("visible", false);
+    // The aggregated sum gives us the total height of the bar.
+    const aggregatedSum = aggregatedMap.get(year);
+    const barPixelHeight = height - y(aggregatedSum);
 
-      // Remove highlight
-      d3.select(this).classed("highlighted", false);
+    // A scale factor to convert each node's sqrt value to a pixel height.
+    const scaleFactor = totalSqrt > 0 ? barPixelHeight / totalSqrt : 0;
+
+    let cumulative = 0; // running total for stacking the nodes
+
+    // Node width is a fraction of the available band.
+    const nodeWidth = x.bandwidth() / 3;
+
+    elements.forEach((node) => {
+      const d = node.__data__;
+      const sqrtValue = Math.sqrt(d.people_left_homeless);
+      const nodeHeight = sqrtValue * scaleFactor;
+      cumulative += nodeHeight;
+
+      // Compute base positions relative to the bar chart coordinate system.
+      const baseX = x(year) + (x.bandwidth() - nodeWidth) / 2;
+      const baseY = height - cumulative;
+
+      // For nodes reparented to the bar chart, the "base" coordinates are correct.
+      // For tile nodes (that remain in the original container), add the bar chart group's
+      // transform offset (margin) so that they appear in the right global position.
+      const finalX = d.tileNode ? baseX + margin.left : baseX;
+      const finalY = d.tileNode ? baseY + margin.top : baseY;
+
+      d3.select(node)
+        .transition()
+        .duration(1000)
+        .attr("x", finalX)
+        .attr("y", finalY)
+        .attr("width", nodeWidth)
+        .attr("height", nodeHeight)
+        .attr("fill", "#404080")
+        .attr("opacity", 0.6);
+    });
+  });
+}
+
+export function hideBarChartAxesAndLabels() {
+  d3.select(".bar-chart")
+    .selectAll(".x-axis, .y-axis, .x-label, .y-label")
+    .transition()
+    .duration(500)
+    .style("opacity", 0)
+    .on("end", function () {
+      d3.select(this).style("display", "none");
     });
 }

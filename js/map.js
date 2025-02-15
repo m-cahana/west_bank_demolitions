@@ -183,6 +183,12 @@ export function hideMap() {
 export function initiateNodeTransition(nodes, map, RECT, simulation) {
   nodes.filter((d) => !d.showOnMap).style("display", "none");
 
+  // Reparent nodes to the map overlay
+  const mapOverlay = d3.select("#map").select("svg.map-overlay");
+  nodes.each(function () {
+    mapOverlay.node().appendChild(this);
+  });
+
   function setNodePositions(selection, map) {
     selection
       .attr(
@@ -227,4 +233,10 @@ export function initiateNodeTransition(nodes, map, RECT, simulation) {
 
     simulation.stop();
   });
+}
+
+export function renderHiddenMapNodes(nodes) {
+  nodes
+    .filter((d) => !d.showOnMap && d.people_left_homeless > 0)
+    .style("display", "block");
 }

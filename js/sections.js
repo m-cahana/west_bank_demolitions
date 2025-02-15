@@ -92,7 +92,12 @@ import {
   showGrantedPermits,
   attachTooltip,
 } from "./demolition_nodes.js";
-import { AnimationController, drawMap, hideMap } from "./map.js";
+import {
+  AnimationController,
+  drawMap,
+  hideMap,
+  renderHiddenMapNodes,
+} from "./map.js";
 import { rectSVG, boxSVG, tileNodes } from "./tiles.js";
 import { createPausableQueue } from "./helper_functions.js";
 import {
@@ -100,6 +105,7 @@ import {
   redrawGraphics,
   debounce,
 } from "./dynamic_scaling.js";
+import { stackNodes, hideBarChartAxesAndLabels } from "./node_stack.js";
 
 // *******************
 // data read-in
@@ -406,13 +412,20 @@ let activationFunctions = [
     ));
     nodes = attachTooltip(nodes, tooltip, true);
     svg = rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN);
+    hideBarChartAxesAndLabels();
   },
   () => {
     animationController.pause();
     nodes.interrupt();
-    svg = boxSVG(svg, MARGIN, ADJ_WIDTH, ADJ_HEIGHT);
     mapGenerate = false;
     hideMap();
+    renderHiddenMapNodes(nodes);
+    svg = rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN);
+    stackNodes(palestinianDemolitions, svg, ADJ_WIDTH, ADJ_HEIGHT, nodes, RECT);
+  },
+  () => {
+    hideBarChartAxesAndLabels();
+    svg = boxSVG(svg, MARGIN, ADJ_WIDTH, ADJ_HEIGHT);
     nodes = tileNodes(svg, palestinianDemolitions, ADJ_HEIGHT, nodes, RECT);
   },
 ];
