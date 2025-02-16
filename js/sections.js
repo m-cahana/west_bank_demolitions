@@ -33,7 +33,7 @@ let lineLabelOffset = 50;
 const RECT = {
   WIDTH: 5,
   HEIGHT: 5,
-  OPACITY: 0.5,
+  OPACITY: 0.9,
   DEMOLISHED_OPACITY: 0.1,
   TILE_OPACITY: 0.7,
 };
