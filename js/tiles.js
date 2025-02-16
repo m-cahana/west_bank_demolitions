@@ -4,7 +4,7 @@
 
 import { demolitionImages } from "./demolition_imagery.js";
 
-import { cleanLocality } from "./helper_functions.js";
+import { cleanLocality, formatDate } from "./helper_functions.js";
 
 export function rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN) {
   svg
@@ -165,11 +165,10 @@ export function tileNodes(
     });
 
   // Add click event to each tile node to open a pop-up.
-  // When a tile is clicked, remove any existing pop-up, then create a new one.
-  // The pop-up window size will be twice the tile's width/height
-  // and will be centered relative to the entire grid.
-  // Add click event to each tile node to open a pop-up.
+  // The pop-up will be centered on the grid of tiles and its image centered within it.
   tiles.on("click", function (event, d) {
+    console.log(`d: ${d}`);
+    console.log(`d.locality: ${d.locality}`);
     // Remove any open pop-up.
     svg.selectAll(".tile-popup").remove();
 
@@ -178,30 +177,31 @@ export function tileNodes(
     const svgHeight = parseFloat(svg.attr("height"));
 
     // Calculate the grid dimensions.
-    // (Assuming your grid uses N=9 tiles, arranged as computed by calculateGridLayout)
     const gridWidth = cols * tileSize;
     const gridHeight = rows * tileSize;
 
-    // Compute the offsets so that the grid is centered within the SVG.
+    // Center the grid within the SVG.
     const gridOffsetX = (svgWidth - gridWidth) / 2;
     const gridOffsetY = (svgHeight - gridHeight) / 2;
 
-    // Determine the center of the grid (the center of the 9 nodes).
-    const centerX = gridOffsetX + gridWidth / 2;
-    const centerY = gridOffsetY + gridHeight / 2;
+    // Determine the center of the grid.
+    const gridCenterX = gridOffsetX + gridWidth / 2;
+    const gridCenterY = gridOffsetY + gridHeight / 2;
 
-    // Define the pop-up dimensions: 2x the tile's width & height.
-    const popupWidth = 2 * tileSize;
-    const popupHeight = 2 * tileSize;
+    // Define the pop-up dimensions.
+    // (You can adjust popUpFactor as needed; here we keep it to scale relative to the tile size).
+    const popUpFactor = 2.8;
+    const popupWidth = popUpFactor * tileSize;
+    const popupHeight = popUpFactor * tileSize;
 
-    // Calculate top-left coordinates for the pop-up so that it is centered.
-    const popupX = centerX - popupWidth / 2;
-    const popupY = centerY - popupHeight / 2;
+    // Calculate top-left coordinates for the pop-up so that it is perfectly centered.
+    const popupX = gridCenterX - popupWidth / 2;
+    const popupY = gridCenterY - popupHeight / 2;
 
     // Append a group element for the pop-up.
     const popup = svg.append("g").attr("class", "tile-popup");
 
-    // Pop-up background (a white window with rounded corners).
+    // Pop-up background: a white window with border.
     popup
       .append("rect")
       .attr("x", popupX)
@@ -210,24 +210,24 @@ export function tileNodes(
       .attr("height", popupHeight)
       .attr("fill", "white")
       .attr("stroke", "black")
-      .attr("rx", 10)
-      .attr("ry", 10);
+      .attr("rx", 0)
+      .attr("ry", 0);
 
-    // Define margins for the image and text areas.
-    const imageMargin = 10;
-    const textMargin = 10;
+    // Use a constant margin so that everything in the pop-up is symmetrically inset.
+    const imageMargin = 20;
+    const textMargin = 20;
 
-    // Calculate the image area dimensions (top 60% of the pop-up, inset by imageMargin).
+    // Calculate the image area dimensions (top 60% of the pop-up, with equal margins).
     const imageAreaX = popupX + imageMargin;
     const imageAreaY = popupY + imageMargin;
-    const imageAreaWidth = popupWidth - 2 * imageMargin;
+    const imageAreaWidth = popupWidth * 0.6 - 2 * imageMargin;
     const imageAreaHeight = popupHeight * 0.6 - 2 * imageMargin;
 
     // Retrieve the image file for this node.
     const imgData = demolitionImages[d.locality];
     const imgFile = imgData ? imgData[0] : "default_placeholder.jpeg";
 
-    // Append the image for the top portion.
+    // Append the image for the top portion and center it within its area.
     popup
       .append("image")
       .attr("href", `images/${imgFile}`)
@@ -237,13 +237,37 @@ export function tileNodes(
       .attr("height", imageAreaHeight)
       .attr("preserveAspectRatio", "xMidYMid slice");
 
-    // Calculate text area dimensions (bottom 40% of the pop-up, inset by textMargin).
+    // Calculate the image area dimensions (top 60% of the pop-up, with equal margins).
+    const captionAreaX = popupX / 0.425 + imageMargin;
+    const captionAreaY = popupY / 0.8 + imageMargin;
+    const captionAreaWidth = popupWidth * 0.6 - 2 * imageMargin;
+    const captionAreaHeight = popupHeight * 0.6 - 2 * imageMargin;
+
+    popup
+      .append("foreignObject")
+      .attr("class", "popup-text")
+      .attr("x", captionAreaX)
+      .attr("y", captionAreaY)
+      .attr("width", captionAreaWidth)
+      .attr("height", captionAreaHeight)
+      .append("xhtml:div")
+      .attr("class", "popup-text-content")
+      .html(
+        `<pre>
+        ${d.locality_cleaned} 
+            ${d.district} 
+            
+        ${formatDate(d.date_of_demolition)} 
+          ${d.people_left_homeless} people left homeless
+        </pre>`
+      );
+
+    // Append a foreignObject for additional text content (if needed).
     const textAreaX = popupX + textMargin;
-    const textAreaY = popupY + popupHeight * 0.6 + textMargin;
+    const textAreaY = popupY + popupHeight * 0.6 + textMargin - imageMargin;
     const textAreaWidth = popupWidth - 2 * textMargin;
     const textAreaHeight = popupHeight * 0.4 - 2 * textMargin;
 
-    // Append a foreignObject element so the text area can scroll.
     popup
       .append("foreignObject")
       .attr("x", textAreaX)
@@ -264,31 +288,14 @@ export function tileNodes(
       <p>Donec euismod vitae ante ut venenatis. Vestibulum laoreet ex non quam feugiat, a molestie risus blandit. Suspendisse potenti. Nulla facilisi. Duis ultricies elit ac eros consequat, in bibendum neque faucibus.</p>
     `);
 
-    // Define a size for the close (X) button.
+    // Define the size for the close (X) button.
     const closeButtonSize = 20;
 
-    // Append a rectangle as a background for the close button in the top-right corner.
-    popup
-      .append("rect")
-      .attr("class", "popup-close-btn")
-      .attr("x", popupX + popupWidth - closeButtonSize - 5)
-      .attr("y", popupY + 5)
-      .attr("width", closeButtonSize)
-      .attr("height", closeButtonSize)
-      .attr("fill", "#ccc")
-      .attr("stroke", "black")
-      .attr("rx", 3)
-      .attr("ry", 3)
-      .style("cursor", "pointer")
-      .on("click", function () {
-        svg.selectAll(".tile-popup").remove();
-      });
-
-    // Append an "X" text on top of the close button.
+    // Append an "X" text in the upper-right corner of the pop-up.
     popup
       .append("text")
-      .attr("x", popupX + popupWidth - closeButtonSize / 2 - 5)
-      .attr("y", popupY + closeButtonSize / 2 + 5)
+      .attr("x", popupX + popupWidth - closeButtonSize - 5)
+      .attr("y", popupY + closeButtonSize + 5)
       .attr("text-anchor", "middle")
       .attr("dominant-baseline", "middle")
       .text("X")

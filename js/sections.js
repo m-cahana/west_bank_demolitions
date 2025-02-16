@@ -391,6 +391,7 @@ let activationFunctions = [
       RECT_ADJUSTMENT_FACTOR
     );
     hideMap();
+    renderHiddenMapNodes(nodes);
     showGrantedPermits(nodes, RECT);
     animationController = AnimationController(demolitionDates, nodes, RECT);
     animationController.pause();

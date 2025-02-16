@@ -90,3 +90,51 @@ export function createPausableQueue(array, callback) {
 
   return { pause, resume, flush };
 }
+
+export function formatDate(date) {
+  // Array of month names
+  const months = [
+    "January",
+    "February",
+    "March",
+    "April",
+    "May",
+    "June",
+    "July",
+    "August",
+    "September",
+    "October",
+    "November",
+    "December",
+  ];
+
+  // Get the month name
+  const monthName = months[date.getMonth()];
+
+  // Get the day of month and determine the ordinal suffix
+  const day = date.getDate();
+  const dayWithOrdinal = addOrdinalSuffix(day);
+
+  // Get the full year
+  const year = date.getFullYear();
+
+  // Construct and return the formatted date string
+  return `${monthName} ${dayWithOrdinal}, ${year}`;
+}
+
+// Helper function to add ordinal suffix (st, nd, rd, th) to a number
+export function addOrdinalSuffix(number) {
+  const j = number % 10;
+  const k = number % 100;
+
+  if (j === 1 && k !== 11) {
+    return number + "st";
+  }
+  if (j === 2 && k !== 12) {
+    return number + "nd";
+  }
+  if (j === 3 && k !== 13) {
+    return number + "rd";
+  }
+  return number + "th";
+}

@@ -141,7 +141,18 @@ svg circle:hover {
 }
 
 .map-popup {
-  font-family: "Roboto";
+  font-family: "Helvetica";
+}
+
+.popup-text-content {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+  font-size: 12px;
+  padding: 5px;
+  font-weight: 300;
+  font-style: italic;
+  font-family: Helvetica; /* Example: setting a font-family */
 }
 
 strong {
