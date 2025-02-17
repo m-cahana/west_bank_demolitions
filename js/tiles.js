@@ -76,20 +76,21 @@ function calculateGridLayout(N, svgWidth, svgHeight) {
 export function tileNodes(
   svg,
   palestinianDemolitions,
+  MARGIN,
   ADJ_HEIGHT,
   nodes,
-  RECT
+  RECT,
+  RECT_ADJUSTMENT_FACTOR
 ) {
-  // Ensure hidden nodes (that are not marked for the map) are visible for tiling.
+  // Show hidden nodes (for tiling)
   nodes.filter((d) => !d.showOnMap).style("display", "block");
 
   // Number of nodes to display in the grid.
   const N = 9;
-
-  // Optionally shuffle or filter your nodes (here we filter using tileLocalities)
+  // Filter nodes designated as tile nodes.
   const selectedNodes = palestinianDemolitions.filter((d) => d.tileNode);
 
-  // Calculate grid layout (columns, rows, tile size) for the given dimensions.
+  // Calculate grid layout (columns, rows, and tile size using the adjusted height)
   const { cols, rows, tileSize } = calculateGridLayout(
     N,
     ADJ_HEIGHT,
@@ -106,24 +107,14 @@ export function tileNodes(
     d.targetHeight = tileSize;
   });
 
-  // Create the <defs> block for SVG patterns.
+  // Create <defs> for SVG patterns using your demolition images.
   const defs = svg.append("defs");
-
-  // Get the unique localities from the selected nodes.
   const uniqueLocalities = Array.from(
     new Set(selectedNodes.map((d) => d.locality))
   );
-
-  // For each locality, create a pattern using the exact locality name.
   uniqueLocalities.forEach((locality) => {
-    // Retrieve the image data from the mapping.
     const imgData = demolitionImages[locality];
-
-    // Use a fallback image if the mapping is missing an entry.
     const imgFile = imgData ? imgData[0] : "default_placeholder.jpeg";
-
-    console.log(`${cleanLocality(locality)}: ${imgFile}`);
-
     defs
       .append("pattern")
       .attr("id", `tile-image-${cleanLocality(locality)}`)
@@ -138,9 +129,10 @@ export function tileNodes(
       .attr("height", 1);
   });
 
-  // Select the tile nodes based on the selectedNodes array and hide others.
+  // Select the nodes that will be tiled.
   const tiles = nodes.filter((d) => selectedNodes.includes(d));
 
+  // Hide the rest of the nodes.
   nodes
     .filter((d) => !d.tileNode)
     .attr("opacity", 0)
@@ -148,7 +140,7 @@ export function tileNodes(
     .on("mousemove.tooltip", null)
     .on("mouseout.tooltip", null);
 
-  // Animate the selected nodes to their grid positions and apply the pattern fill.
+  // Transition the tiles to their grid positions and apply pattern fill.
   tiles
     .transition()
     .duration(1000)
@@ -164,147 +156,140 @@ export function tileNodes(
       d3.select(this).classed("tiled", true);
     });
 
-  // Add click event to each tile node to open a pop-up.
-  // The pop-up will be centered on the grid of tiles and its image centered within it.
+  // Inside your tileNodes() function, after the tiles have been positioned...
+  // In your tileNodes() function, after the tiles have been positioned...
   tiles.on("click", function (event, d) {
-    console.log(`d: ${d}`);
-    console.log(`d.locality: ${d.locality}`);
-    // Remove any open pop-up.
-    svg.selectAll(".tile-popup").remove();
+    // Select the parent so that the pop-up shares the same coordinate system.
+    const parent = d3.select(this.parentNode);
+    console.log(parent);
+    // Remove any existing pop-up to avoid duplicates.
+    parent.selectAll("g.popup").remove();
 
-    // Retrieve the SVG's dimensions.
-    const svgWidth = parseFloat(svg.attr("width"));
-    const svgHeight = parseFloat(svg.attr("height"));
+    // Use the tile's dimensions (assuming squares) to determine pop-up size.
+    const tileSize = d.targetWidth;
+    const popupScale = 2.8;
+    const popupWidth = tileSize * popupScale;
+    const popupHeight = tileSize * popupScale;
 
-    // Calculate the grid dimensions.
-    const gridWidth = cols * tileSize;
-    const gridHeight = rows * tileSize;
+    // Calculate the grid center.
+    const N = 9; // Number of tiled nodes in the grid.
+    const {
+      cols,
+      rows,
+      tileSize: gridTileSize,
+    } = calculateGridLayout(N, ADJ_HEIGHT, ADJ_HEIGHT);
+    const gridWidth = cols * gridTileSize;
+    const gridHeight = rows * gridTileSize;
+    const centerX = gridWidth / 2;
+    const centerY = gridHeight / 2;
 
-    // Center the grid within the SVG.
-    const gridOffsetX = (svgWidth - gridWidth) / 2;
-    const gridOffsetY = (svgHeight - gridHeight) / 2;
-
-    // Determine the center of the grid.
-    const gridCenterX = gridOffsetX + gridWidth / 2;
-    const gridCenterY = gridOffsetY + gridHeight / 2;
-
-    // Define the pop-up dimensions.
-    // (You can adjust popUpFactor as needed; here we keep it to scale relative to the tile size).
-    const popUpFactor = 2.8;
-    const popupWidth = popUpFactor * tileSize;
-    const popupHeight = popUpFactor * tileSize;
-
-    // Calculate top-left coordinates for the pop-up so that it is perfectly centered.
-    const popupX = gridCenterX - popupWidth / 2;
-    const popupY = gridCenterY - popupHeight / 2;
-
-    // Append a group element for the pop-up.
-    const popup = svg.append("g").attr("class", "tile-popup");
-
-    // Pop-up background: a white window with border.
-    popup
-      .append("rect")
-      .attr("x", popupX)
-      .attr("y", popupY)
-      .attr("width", popupWidth)
-      .attr("height", popupHeight)
-      .attr("fill", "white")
-      .attr("stroke", "black")
-      .attr("rx", 0)
-      .attr("ry", 0);
-
-    // Use a constant margin so that everything in the pop-up is symmetrically inset.
-    const imageMargin = 20;
-    const textMargin = 20;
-
-    // Calculate the image area dimensions (top 60% of the pop-up, with equal margins).
-    const imageAreaX = popupX + imageMargin;
-    const imageAreaY = popupY + imageMargin;
-    const imageAreaWidth = popupWidth * 0.6 - 2 * imageMargin;
-    const imageAreaHeight = popupHeight * 0.6 - 2 * imageMargin;
-
-    // Retrieve the image file for this node.
-    const imgData = demolitionImages[d.locality];
-    const imgFile = imgData ? imgData[0] : "default_placeholder.jpeg";
-
-    // Append the image for the top portion and center it within its area.
-    popup
-      .append("image")
-      .attr("href", `images/${imgFile}`)
-      .attr("x", imageAreaX)
-      .attr("y", imageAreaY)
-      .attr("width", imageAreaWidth)
-      .attr("height", imageAreaHeight)
-      .attr("preserveAspectRatio", "xMidYMid slice");
-
-    // Calculate the image area dimensions (top 60% of the pop-up, with equal margins).
-    const captionAreaX = popupX / 0.425 + imageMargin;
-    const captionAreaY = popupY / 0.8 + imageMargin;
-    const captionAreaWidth = popupWidth * 0.6 - 2 * imageMargin;
-    const captionAreaHeight = popupHeight * 0.6 - 2 * imageMargin;
-
-    popup
-      .append("foreignObject")
-      .attr("class", "popup-text")
-      .attr("x", captionAreaX)
-      .attr("y", captionAreaY)
-      .attr("width", captionAreaWidth)
-      .attr("height", captionAreaHeight)
-      .append("xhtml:div")
-      .attr("class", "popup-text-content")
-      .html(
-        `<pre>
-        ${d.locality_cleaned} 
-            ${d.district} 
-            
-        ${formatDate(d.date_of_demolition)} 
-          ${d.people_left_homeless} people left homeless
-        </pre>`
+    // Add a pop-up group and move it so its center is over the grid center.
+    const popup = parent
+      .append("g")
+      .attr("class", "popup")
+      .attr(
+        "transform",
+        `translate(${centerX - popupWidth / 2}, ${centerY - popupHeight / 2})`
       );
 
-    // Append a foreignObject for additional text content (if needed).
-    const textAreaX = popupX + textMargin;
-    const textAreaY = popupY + popupHeight * 0.6 + textMargin - imageMargin;
-    const textAreaWidth = popupWidth - 2 * textMargin;
-    const textAreaHeight = popupHeight * 0.4 - 2 * textMargin;
-
+    // Add background rectangle (styling moved to CSS via the "popup-bg" class)
     popup
-      .append("foreignObject")
-      .attr("x", textAreaX)
-      .attr("y", textAreaY)
-      .attr("width", textAreaWidth)
-      .attr("height", textAreaHeight)
-      .append("xhtml:div")
-      .style("width", "100%")
-      .style("height", "100%")
-      .style("overflow-y", "auto")
-      .style("font-size", "14px")
-      .style("color", "black")
-      .style("padding", "5px").html(`
-      <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Phasellus eget semper ipsum. Vestibulum velit justo, dapibus a lorem sed, dictum ultricies sem. Vivamus vel hendrerit erat, quis malesuada tellus. Donec ac tincidunt dolor, id lobortis magna.</p>
-      <p>Sed sed mauris et risus semper dapibus. Curabitur id nibh a justo vestibulum mattis. Fusce ut nisi sapien. Praesent tincidunt fermentum risus, in sodales tortor elementum ac. Sed nec commodo nulla. Nam condimentum volutpat enim, in aliquam justo cursus a.</p>
-      <p>Vestibulum ante ipsum primis in faucibus orci luctus et ultrices posuere cubilia curae; Integer auctor turpis in cursus consequat. Nam pretium leo eu est commodo, ac dapibus odio aliquet. Sed mollis blandit elit at ultrices.</p>
-      <p>Proin imperdiet erat vel mi vehicula, eu dictum dolor commodo. Donec suscipit scelerisque leo, a pharetra mauris imperdiet nec. Nulla facilisi. Vivamus tristique bibendum massa, sit amet facilisis orci dapibus vitae.</p>
-      <p>Donec euismod vitae ante ut venenatis. Vestibulum laoreet ex non quam feugiat, a molestie risus blandit. Suspendisse potenti. Nulla facilisi. Duis ultricies elit ac eros consequat, in bibendum neque faucibus.</p>
-    `);
+      .append("rect")
+      .attr("class", "popup-bg")
+      .attr("width", popupWidth)
+      .attr("height", popupHeight);
 
-    // Define the size for the close (X) button.
-    const closeButtonSize = 20;
+    // Define content region dimensions
+    const contentPadding = 5;
+    const topRegionHeight = popupHeight * 0.6; // top 60%
+    const bottomRegionHeight = popupHeight * 0.4; // bottom 40%
+    const imageColWidth = popupWidth * 0.6; // left 60% of width
+    // Caption takes the remaining 40%
+    const imageWidth = imageColWidth - 2 * contentPadding;
+    const imageHeight = topRegionHeight - 2 * contentPadding;
 
-    // Append an "X" text in the upper-right corner of the pop-up.
+    // Add the image with a CSS class.
+    const imgData = demolitionImages[d.locality];
+    const imageFile = imgData ? imgData[0] : "default_placeholder.jpeg";
+    popup
+      .append("image")
+      .attr("class", "popup-image")
+      .attr("x", contentPadding)
+      .attr("y", contentPadding)
+      .attr("width", imageWidth)
+      .attr("height", imageHeight)
+      .attr("href", `images/${imageFile}`)
+      .attr("preserveAspectRatio", "xMidYMid slice");
+
+    // Add caption text on the right side.
+    const captionX = imageColWidth + contentPadding;
+    const captionY = contentPadding + 15;
+    const captionText = `
+      ${d.locality_cleaned}
+      ${d.district}\n\u200B\n${formatDate(d.date_of_demolition)}
+      ${d.housing_units} ${d.housing_units > 1 ? "homes" : "home"} demolished
+      ${d.people_left_homeless} ${
+      d.people_left_homeless > 1 ? "people" : "person"
+    } left homeless`;
+
+    // Create text element and use tspans for multi-line text.
+    const caption = popup
+      .append("text")
+      .attr("class", "popup-caption")
+      .attr("x", captionX)
+      .attr("y", captionY);
+
+    caption
+      .selectAll("tspan")
+      .data(
+        captionText
+          .split("\n")
+          .map((line) => line.trim())
+          .filter((line) => line.length > 0) // optionally remove empty lines
+      )
+      .enter()
+      .append("tspan")
+      .attr("x", captionX)
+      .attr("dy", "1.2em")
+      .text((txt) => txt);
+
+    // Add a close ("x") button to the top right of the popup
+    const closeButtonPadding = 10; // adjust padding as needed
     popup
       .append("text")
-      .attr("x", popupX + popupWidth - closeButtonSize - 5)
-      .attr("y", popupY + closeButtonSize + 5)
-      .attr("text-anchor", "middle")
-      .attr("dominant-baseline", "middle")
-      .text("X")
-      .attr("fill", "black")
+      .attr("class", "popup-close")
+      .attr("x", popupWidth - closeButtonPadding) // position near the top right
+      .attr("y", closeButtonPadding + 10) // adjust for text baseline
+      .text("×")
       .style("cursor", "pointer")
       .on("click", function () {
-        svg.selectAll(".tile-popup").remove();
+        // Remove the popup when "x" is clicked
+        popup.remove();
       });
+
+    // Add scrollable filler text in the bottom region using a foreignObject.
+    popup
+      .append("foreignObject")
+      .attr("class", "popup-filler")
+      .attr("x", contentPadding)
+      .attr("y", topRegionHeight + contentPadding)
+      .attr("width", popupWidth - 2 * contentPadding)
+      .attr("height", bottomRegionHeight - 2 * contentPadding)
+      .append(
+        "xhtml:div"
+      ).html(`Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.<br>
+           Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.<br>
+           Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.<br>
+           Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.<br>
+            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.<br>
+           Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.<br>
+           Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.<br>
+           (Scroll for more...)`);
   });
 
   return nodes;
+}
+
+export function closeAllPopups() {
+  d3.selectAll("g.popup").remove();
 }

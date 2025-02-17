@@ -46,6 +46,7 @@ export function initiateDemolitionNodes(
     .attr("opacity", RECT.OPACITY)
     .on("mouseover", function (event, d) {
       console.log("mouseover");
+
       if (d3.select(this).attr("opacity") > 0) {
         tooltip
           .html(

@@ -98,7 +98,7 @@ import {
   hideMap,
   renderHiddenMapNodes,
 } from "./map.js";
-import { rectSVG, boxSVG, tileNodes } from "./tiles.js";
+import { rectSVG, boxSVG, tileNodes, closeAllPopups } from "./tiles.js";
 import { createPausableQueue } from "./helper_functions.js";
 import {
   updateDimensions,
@@ -276,10 +276,7 @@ function drawInitial() {
   });
 
   // some map constants
-  mapContainer = svg
-    .append("g")
-    .attr("class", "map-container")
-    .attr("transform", `translate(${MARGIN.LEFT}, ${MARGIN.TOP})`);
+  mapContainer = svg.append("g").attr("class", "map-container");
 
   // Append a div for Mapbox inside the map container
   svg
@@ -423,11 +420,19 @@ let activationFunctions = [
     renderHiddenMapNodes(nodes);
     svg = rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN);
     stackNodes(palestinianDemolitions, svg, ADJ_WIDTH, ADJ_HEIGHT, nodes, RECT);
+    closeAllPopups();
   },
   () => {
     hideBarChartAxesAndLabels();
     svg = boxSVG(svg, MARGIN, ADJ_WIDTH, ADJ_HEIGHT);
-    nodes = tileNodes(svg, palestinianDemolitions, ADJ_HEIGHT, nodes, RECT);
+    nodes = tileNodes(
+      svg,
+      palestinianDemolitions,
+      MARGIN,
+      ADJ_HEIGHT,
+      nodes,
+      RECT
+    );
   },
 ];
 

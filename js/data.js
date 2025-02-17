@@ -37,6 +37,8 @@ export function loadDemolitionsData(tileLocalities) {
 
       d.date_of_demolition = new Date(d.date_of_demolition);
 
+      d.locality_cleaned = d.locality_cleaned.replace(/\([^()]*\)/g, "").trim();
+
       d.offsetX = getRandomOffset(BUFFER_RANGE);
       d.offsetY = getRandomOffset(BUFFER_RANGE);
 
