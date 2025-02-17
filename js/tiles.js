@@ -3,7 +3,6 @@
 // *******************
 
 import { demolitionImages } from "./demolition_imagery.js";
-
 import { cleanLocality, formatDate } from "./helper_functions.js";
 
 export function rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN) {
@@ -27,11 +26,8 @@ export function boxSVG(svg, MARGIN, ADJ_WIDTH, ADJ_HEIGHT) {
   const deltaY = (ADJ_HEIGHT + MARGIN.TOP + MARGIN.BOTTOM - newHeight) / 2;
 
   svg
-    .attr("width", Math.min(ADJ_HEIGHT, ADJ_WIDTH) + MARGIN.LEFT + MARGIN.RIGHT)
-    .attr(
-      "height",
-      Math.min(ADJ_HEIGHT, ADJ_WIDTH) + MARGIN.TOP + MARGIN.BOTTOM
-    )
+    .attr("width", newWidth)
+    .attr("height", newHeight)
     .transition()
     .duration(1000) // Adjust duration as needed
     .attr("transform", `translate(${deltaX}, ${deltaY})`);
@@ -40,7 +36,7 @@ export function boxSVG(svg, MARGIN, ADJ_WIDTH, ADJ_HEIGHT) {
 }
 
 /**
- * calculates the number of columns and rows for a grid layout.
+ * Calculates the number of columns and rows for a grid layout.
  *
  * @param {number} N - Number of tiles.
  * @param {number} svgWidth - Width of the SVG.
@@ -71,7 +67,7 @@ function calculateGridLayout(N, svgWidth, svgHeight) {
 }
 
 /**
- * tiles selection of nodes into a grid layout covering the entire SVG.
+ * Tiles selection of nodes into a grid layout covering the entire SVG.
  */
 export function tileNodes(
   svg,
@@ -156,12 +152,10 @@ export function tileNodes(
       d3.select(this).classed("tiled", true);
     });
 
-  // Inside your tileNodes() function, after the tiles have been positioned...
-  // In your tileNodes() function, after the tiles have been positioned...
+  // Inside tileNodes() add a click handler for the tiles.
   tiles.on("click", function (event, d) {
-    // Select the parent so that the pop-up shares the same coordinate system.
+    // Select the parent so the pop-up shares the same coordinate system.
     const parent = d3.select(this.parentNode);
-    console.log(parent);
     // Remove any existing pop-up to avoid duplicates.
     parent.selectAll("g.popup").remove();
 
@@ -172,7 +166,6 @@ export function tileNodes(
     const popupHeight = tileSize * popupScale;
 
     // Calculate the grid center.
-    const N = 9; // Number of tiled nodes in the grid.
     const {
       cols,
       rows,
@@ -183,7 +176,7 @@ export function tileNodes(
     const centerX = gridWidth / 2;
     const centerY = gridHeight / 2;
 
-    // Add a pop-up group and move it so its center is over the grid center.
+    // Add a pop-up group and center it over the grid.
     const popup = parent
       .append("g")
       .attr("class", "popup")
@@ -199,12 +192,11 @@ export function tileNodes(
       .attr("width", popupWidth)
       .attr("height", popupHeight);
 
-    // Define content region dimensions
+    // Define content region dimensions.
     const contentPadding = 5;
     const topRegionHeight = popupHeight * 0.6; // top 60%
     const bottomRegionHeight = popupHeight * 0.4; // bottom 40%
     const imageColWidth = popupWidth * 0.6; // left 60% of width
-    // Caption takes the remaining 40%
     const imageWidth = imageColWidth - 2 * contentPadding;
     const imageHeight = topRegionHeight - 2 * contentPadding;
 
@@ -221,39 +213,32 @@ export function tileNodes(
       .attr("href", `images/${imageFile}`)
       .attr("preserveAspectRatio", "xMidYMid slice");
 
-    // Add caption text on the right side.
+    // Use a foreignObject for the caption and assign it the CSS class "popup-caption".
     const captionX = imageColWidth + contentPadding;
-    const captionY = contentPadding + 15;
+    const captionY = contentPadding;
+    const captionWidth = popupWidth - captionX - contentPadding;
+    const captionHeight = topRegionHeight - 2 * contentPadding;
     const captionText = `
       ${d.locality_cleaned}
-      ${d.district}\n\u200B\n${formatDate(d.date_of_demolition)}
+      ${d.district}<br/>
+      ${formatDate(d.date_of_demolition)}
       ${d.housing_units} ${d.housing_units > 1 ? "homes" : "home"} demolished
       ${d.people_left_homeless} ${
       d.people_left_homeless > 1 ? "people" : "person"
-    } left homeless`;
+    } left homeless
+    `;
 
-    // Create text element and use tspans for multi-line text.
-    const caption = popup
-      .append("text")
+    popup
+      .append("foreignObject")
+      .attr("x", captionX)
+      .attr("y", captionY)
+      .attr("width", captionWidth)
+      .attr("height", captionHeight)
+      .append("xhtml:div")
       .attr("class", "popup-caption")
-      .attr("x", captionX)
-      .attr("y", captionY);
+      .html(captionText);
 
-    caption
-      .selectAll("tspan")
-      .data(
-        captionText
-          .split("\n")
-          .map((line) => line.trim())
-          .filter((line) => line.length > 0) // optionally remove empty lines
-      )
-      .enter()
-      .append("tspan")
-      .attr("x", captionX)
-      .attr("dy", "1.2em")
-      .text((txt) => txt);
-
-    // Add a close ("x") button to the top right of the popup
+    // Add a close ("×") button to the top right of the popup.
     const closeButtonPadding = 10; // adjust padding as needed
     popup
       .append("text")
@@ -263,7 +248,7 @@ export function tileNodes(
       .text("×")
       .style("cursor", "pointer")
       .on("click", function () {
-        // Remove the popup when "x" is clicked
+        // Remove the popup when "×" is clicked.
         popup.remove();
       });
 
@@ -281,7 +266,7 @@ export function tileNodes(
            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.<br>
            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.<br>
            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.<br>
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.<br>
+           Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.<br>
            Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.<br>
            Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.<br>
            (Scroll for more...)`);

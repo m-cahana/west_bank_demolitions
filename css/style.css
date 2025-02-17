@@ -178,6 +178,8 @@ svg circle:hover {
   font-weight: 300;
   font-style: italic;
   fill: black;
+  width: 100%;
+  height: 100%;
   white-space: pre-line; /* this respects newlines in your text */
 }
 
@@ -560,6 +562,15 @@ strong {
   .dubois-label-year {
     font-size: 10px !important;
   }
+
+  .popup-caption {
+    font-size: 12px;
+    line-height: 1;
+  }
+
+  .popup-filler > div {
+    font-size: 12px;
+  }
 }
 
 /* even smaller  */
@@ -579,6 +590,16 @@ strong {
   .israeli-line-path,
   [class^="palestinian-"] {
     stroke-width: 1px;
+  }
+
+  /* Caption text styling */
+  .popup-caption {
+    font-size: 10px;
+  }
+
+  /* Scrollable filler text in the bottom region */
+  .popup-filler > div {
+    font-size: 10px;
   }
 }
 

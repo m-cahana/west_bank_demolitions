@@ -291,4 +291,6 @@ export function redrawGraphics({
   setTimeout(() => {
     updatePermitLabels(ADJ_WIDTH, walkX, walkY, CORE_XY_DOMAIN, PERMIT_TEXT);
   }, 50);
+
+  // update bar chart
 }

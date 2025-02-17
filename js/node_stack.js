@@ -8,7 +8,8 @@ export function stackNodes(
   ADJ_WIDTH,
   ADJ_HEIGHT,
   nodes,
-  RECT
+  RECT,
+  BAR_MARGIN
 ) {
   // --- Aggregate Data ---
   const aggregatedData = d3.rollups(
@@ -22,9 +23,8 @@ export function stackNodes(
   aggregatedData.sort((a, b) => d3.ascending(a[0], b[0]));
 
   // --- Chart Dimensions and Scales ---
-  const margin = { top: 50, right: 30, bottom: 50, left: 200 };
-  const width = ADJ_WIDTH - margin.left - margin.right;
-  const height = ADJ_HEIGHT - margin.top - margin.bottom;
+  const width = ADJ_WIDTH - BAR_MARGIN.left - BAR_MARGIN.right;
+  const height = ADJ_HEIGHT - BAR_MARGIN.top - BAR_MARGIN.bottom;
 
   // Create or update the bar chart group for axes and labels
   let barChart = svg.select(".bar-chart");
@@ -32,7 +32,7 @@ export function stackNodes(
     barChart = svg
       .append("g")
       .attr("class", "bar-chart")
-      .attr("transform", `translate(${margin.left},${margin.top})`);
+      .attr("transform", `translate(${BAR_MARGIN.left},${BAR_MARGIN.top})`);
 
     // Append X axis group.
     barChart
@@ -72,7 +72,7 @@ export function stackNodes(
       .attr("class", "y-label")
       .attr("transform", "rotate(-90)")
       .attr("x", -height / 2)
-      .attr("y", -margin.top * 1.2)
+      .attr("y", -BAR_MARGIN.top * 1.2)
       .attr("dy", "1em")
       .style("text-anchor", "middle")
       .text("People Left Homeless");
@@ -82,7 +82,7 @@ export function stackNodes(
       .append("text")
       .attr("class", "x-label")
       .attr("x", width / 2)
-      .attr("y", height + margin.bottom * 1.1)
+      .attr("y", height + BAR_MARGIN.bottom * 1.1)
       .style("text-anchor", "middle")
       .text("Year");
   } else {
@@ -153,7 +153,7 @@ export function stackNodes(
 
       // Add the margin offset to align with the bar chart's placement.
       // Since we're not reparenting, the nodes remain in the original container.
-      const finalX = baseX + margin.left / 2;
+      const finalX = baseX + BAR_MARGIN.left / 2;
       const finalY = baseY;
 
       d3.select(node)
