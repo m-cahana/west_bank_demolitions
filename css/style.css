@@ -41,6 +41,10 @@ body {
   position: relative;
 }
 
+.methodology-text {
+  margin-left: 20px; /* Adjust the value if needed */
+}
+
 #graphic {
   display: flex;
   flex-direction: column;
