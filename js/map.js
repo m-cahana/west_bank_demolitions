@@ -222,7 +222,6 @@ export function initiateNodeTransition(nodes, map, RECT, simulation) {
       .transition()
       .duration(1000)
       // ensure proper widths and heights
-      .style("stroke", "black")
       .attr("width", (d) => d.housing_units ** (1 / 2) * RECT.WIDTH)
       .attr("height", (d) => d.housing_units ** (1 / 2) * RECT.HEIGHT)
       .call(setNodePositions, map)

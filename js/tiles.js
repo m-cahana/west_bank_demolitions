@@ -252,6 +252,16 @@ export function tileNodes(
         popup.remove();
       });
 
+    // Add horizontal divider line between the image/caption and the filler content
+    popup
+      .append("line")
+      .attr("x1", contentPadding * 4) // start a little right of the popup's left edge
+      .attr("y1", topRegionHeight) // at the bottom of the top region
+      .attr("x2", popupWidth - contentPadding * 4) // end a little before the popup's right edge
+      .attr("y2", topRegionHeight)
+      .style("stroke", "var(--palestinian)") // uses the Palestinian color from style.css
+      .style("stroke-width", 1); // adjust thickness as desired
+
     // Add scrollable filler text in the bottom region using a foreignObject.
     popup
       .append("foreignObject")
@@ -277,4 +287,36 @@ export function tileNodes(
 
 export function closeAllPopups() {
   d3.selectAll("g.popup").remove();
+}
+
+/**
+ * Resets tile-specific styling so that the nodes revert to their original appearance.
+ * This function removes the pattern fill, resets stroke and opacity, and removes the
+ * "tiled" class so that highlighting and other behaviors work as they did originally.
+ *
+ * @param {d3.selection} nodes - The D3 selection of node elements.
+ * @param {Object} RECT - The RECT object containing standard dimensions and opacities.
+ */
+export function resetTileStyling(nodes, RECT) {
+  nodes
+    .filter((d) => d.tileNode)
+    .interrupt("resetTile")
+    .transition("resetTile")
+    .duration(500)
+    // Reset the fill style to the original CSS value.
+    // In your style.css, .nodes is defined with:
+    //   fill: var(--palestinian);
+    .style("fill", "var(--palestinian)")
+    // Remove any tile-defined stroke and revert to the default (none).
+    .style("stroke", "none")
+    // Remove an inline stroke-width so that CSS or simulation can control it.
+    .style("stroke-width", null)
+    // Reset the opacity to the original value from RECT.
+    .attr("opacity", RECT.OPACITY)
+    // Optionally, if tileNodes rewrites geometry (x, y, width, height),
+    // you may want them to be updated via the simulation instead.
+    // Revert the tile-specific class.
+    .on("end", function () {
+      d3.select(this).classed("tiled", false);
+    });
 }

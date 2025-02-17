@@ -7,8 +7,19 @@
 }
 
 :root {
+  --palestinian: #ec3b3b;
   --primary-blue: rgb(56, 56, 241);
-  --secondary-blue: rgb(102, 102, 230);
+  --israeli: rgb(118, 118, 231);
+}
+
+/* Targeting Palestinian lines (e.g., classes like "palestinian-2010-line-path") */
+[class^="palestinian-"] {
+  stroke: var(--palestinian) !important;
+}
+
+/* Targeting the Israeli line */
+.israeli-line-path {
+  stroke: var(--israeli) !important;
 }
 
 body {
@@ -293,12 +304,12 @@ strong {
 
 .nodes {
   stroke: none;
-  fill: rgb(239, 72, 72);
+  fill: var(--palestinian);
   transition: stroke 0.1s ease, stroke-width 0.1s ease;
 }
 
 .nodes.highlighted {
-  stroke: rgb(255, 0, 0);
+  stroke: var(--palestinian);
   stroke-width: 8;
 }
 

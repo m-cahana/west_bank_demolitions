@@ -99,7 +99,13 @@ import {
   hideMap,
   renderHiddenMapNodes,
 } from "./map.js";
-import { rectSVG, boxSVG, tileNodes, closeAllPopups } from "./tiles.js";
+import {
+  rectSVG,
+  boxSVG,
+  tileNodes,
+  closeAllPopups,
+  resetTileStyling,
+} from "./tiles.js";
 import { createPausableQueue } from "./helper_functions.js";
 import {
   updateDimensions,
@@ -430,6 +436,7 @@ let activationFunctions = [
       BAR_MARGIN
     );
     closeAllPopups();
+    resetTileStyling(nodes, RECT);
   },
   () => {
     hideBarChartAxesAndLabels();
