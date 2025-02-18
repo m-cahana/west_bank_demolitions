@@ -187,7 +187,7 @@ export function redrawGraphics({
     if (instance.text) {
       const firstPoint = instance.data[0];
       instance.text
-        .attr("x", walkX(-6))
+        .attr("x", walkX(-10))
         .attr("y", walkY(firstPoint.value - 1.5));
     }
   });

@@ -28,7 +28,7 @@ let MARGIN = { LEFT: 150, RIGHT: 100, TOP: 50, BOTTOM: 20 };
 let WIDTH = 800;
 let HEIGHT = 500;
 let HEIGHT_WIDTH_RATIO = HEIGHT / WIDTH;
-let lineLabelOffset = 50;
+let lineLabelOffset = -50;
 
 const BAR_MARGIN = { top: 50, right: 30, bottom: 50, left: 200 };
 const RECT = {
@@ -83,6 +83,7 @@ import {
   drawIsraeliLines,
   hideIsraeliLines,
   hidePalestinianLines,
+  verticalHelper,
 } from "./lines.js";
 import {
   initiateDemolitionNodes,
@@ -235,23 +236,6 @@ function drawInitial() {
   // Append a group element to hold the paths
   lineGroup = svg.append("g").attr("class", "permit-lines");
 
-  function forEachWithVariableDelay(array, callback) {
-    let i = 0;
-
-    function iterate() {
-      if (i < array.length) {
-        const d = array[i];
-        callback(d, i, array);
-        // Ensure that d.permits is a non-negative number
-        const delay = Math.max(30, d.permits * 30);
-        setTimeout(iterate, delay);
-        i++;
-      }
-    }
-
-    iterate();
-  }
-
   animatedQueue = createPausableQueue(palestinianPermits, (d) => {
     let lineInstance = new AnimatedLine(
       lineGroup,
@@ -268,7 +252,7 @@ function drawInitial() {
       walkX,
       walkY,
       line,
-      d.year
+      `${d.year} - ${d.permits}`
     );
 
     animatedLines.push(lineInstance);

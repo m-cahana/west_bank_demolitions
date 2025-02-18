@@ -264,7 +264,7 @@ strong {
 
 .x-axis .tick text,
 .y-axis .tick text {
-  font-family: "Roboto", sans-serif;
+  font-family: Helvetica,
   font-size: 12px;
   font-style: bold;
   fill: #555;
@@ -274,7 +274,7 @@ strong {
 .y-axis path,
 .x-axis line,
 .y-axis line {
-  stroke: #ccc;
+  stroke: black;
 }
 .title {
   font-size: 20px;
@@ -366,11 +366,16 @@ strong {
   fill: black;
 }
 
-.dubois-label,
+.dubois-label {
+  font-size: 12px; /* Sets the font size */
+  text-anchor: start; /* Centers the text horizontally */
+  dominant-baseline: middle; /* Centers the text vertically */
+}
+
 .dubois-label-decade,
 .dubois-label-year {
   font-size: 12px; /* Sets the font size */
-  text-anchor: middle; /* Centers the text horizontally */
+  text-anchor: start; /* Centers the text horizontally */
   dominant-baseline: middle; /* Centers the text vertically */
 }
 

@@ -82,7 +82,7 @@ export class AnimatedLine {
       this.text = lineGroup
         .append("text")
         .attr("class", "dubois-label")
-        .attr("x", walkX(-6))
+        .attr("x", walkX(-10))
         .attr("y", walkY(firstPoint.value - 1.5))
         .attr("dy", "-0.5em")
         .attr("fill", color)
@@ -174,9 +174,6 @@ export function consolidatePalestinianLines(
     // Remove prior labels
     svg.selectAll(".dubois-label").attr("display", "none");
 
-    // Grab year info
-    const years = palestinianPermits.map((d) => d.year);
-
     const firstPoint = consolidatedPathData[0];
     const baseX = walkX(firstPoint.step); // Dynamically compute the x position
 
@@ -188,7 +185,9 @@ export function consolidatePalestinianLines(
       .attr("y", walkY(firstPoint.value + 3))
       .attr("text-anchor", "start")
       .attr("fill", "black")
-      .text("Permits granted to Palestinians in a decade");
+      .text(
+        `Permits granted to Palestinians in a decade - ${consolidatedPermits}`
+      );
 
     palestinianPermits.forEach((d) => {
       svg
@@ -323,14 +322,48 @@ export function drawIsraeliLines(
     svg
       .append("text")
       .attr("class", "dubois-label-year")
-      .attr("x", baseXYear + lineLabelOffset * 1.27)
+      .attr("x", baseXYear + lineLabelOffset)
       .attr("y", walkY(STEP_CONFIG.Y_START + 1.75))
       .attr("text-anchor", "start")
       .attr("fill", "black")
-      .text("Permits granted to Israeli settlers in a single year");
+      .text(
+        `Permits granted to Israeli settlers in a single year - ${yearlyIsraeliPermits.toLocaleString()}`
+      );
 
     return israeliLine;
   }
+}
+
+export function verticalHelper(svg, walkX, MARGIN, ADJ_HEIGHT) {
+  // Append the vertical line at x = walkX(100)
+  // Start with y2 equal to MARGIN.TOP so that it "grows" downward
+  const verticalLine = svg
+    .append("line")
+    .attr("x1", walkX(100))
+    .attr("x2", walkX(100))
+    .attr("y1", MARGIN.TOP)
+    .attr("y2", MARGIN.TOP) // initial value
+    .attr("stroke", "black")
+    .attr("stroke-width", 2);
+
+  // Animate the line to extend from top to bottom within the margins
+  verticalLine
+    .transition()
+    .duration(1000) // duration in milliseconds
+    .ease(d3.easeLinear)
+    .attr("y2", ADJ_HEIGHT - MARGIN.BOTTOM);
+
+  // Now append the text label rotated by 90 degrees and placed to the right of the line.
+  // Adjust the x position to be to the right of walkX(100) by adding an offset.
+  const xLabel = walkX(100) + 15; // 15px right of the line (adjust as needed)
+  const yLabel = (MARGIN.TOP + (ADJ_HEIGHT - MARGIN.BOTTOM)) / 2; // vertically centered
+
+  svg
+    .append("text")
+    .attr("transform", `translate(${xLabel}, ${yLabel}) rotate(90)`)
+    .attr("text-anchor", "middle")
+    .attr("fill", "black")
+    .text("100 permits");
 }
 
 export function hideIsraeliLines(svg) {
