@@ -264,7 +264,7 @@ strong {
 
 .x-axis .tick text,
 .y-axis .tick text {
-  font-family: Helvetica,
+  font-family: Helvetica;
   font-size: 12px;
   font-style: bold;
   fill: #555;
