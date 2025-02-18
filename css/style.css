@@ -343,6 +343,12 @@ strong {
   font-size: 0.8em;
 }
 
+.footnote-url {
+  overflow-wrap: break-word;
+  word-wrap: break-word; /* For older browsers */
+  white-space: normal;
+}
+
 .label-rect {
   fill: white;
   stroke: black;
