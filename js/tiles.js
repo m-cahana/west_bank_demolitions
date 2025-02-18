@@ -142,8 +142,6 @@ export function tileNodes(
     .duration(1000)
     .attr("opacity", RECT.TILE_OPACITY)
     .style("fill", (d) => `url(#tile-image-${cleanLocality(d.locality)})`)
-    .style("stroke", "white")
-    .style("stroke-width", 1)
     .attr("x", (d) => d.tileTargetX)
     .attr("y", (d) => d.tileTargetY)
     .attr("width", (d) => d.targetWidth)
@@ -221,11 +219,15 @@ export function tileNodes(
     const captionText = `
       ${d.locality_cleaned}
       ${d.district}<br/>
-      ${formatDate(d.date_of_demolition)}
-      ${d.housing_units} ${d.housing_units > 1 ? "homes" : "home"} demolished
-      ${d.people_left_homeless} ${
+      Demolition: ${formatDate(d.date_of_demolition)}
+      ${d.housing_units} ${
+      d.housing_units > 1 ? "homes" : "home"
+    } demolished, ${d.people_left_homeless} ${
       d.people_left_homeless > 1 ? "people" : "person"
-    } left homeless
+    } left homeless<br/>
+    Photo: ${demolitionImages[d.locality][1]}, ${
+      demolitionImages[d.locality][2]
+    }
     `;
 
     popup
@@ -270,16 +272,8 @@ export function tileNodes(
       .attr("y", topRegionHeight + contentPadding)
       .attr("width", popupWidth - 2 * contentPadding)
       .attr("height", bottomRegionHeight - 2 * contentPadding)
-      .append(
-        "xhtml:div"
-      ).html(`Lorem ipsum dolor sit amet, consectetur adipiscing elit. Sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.<br>
-           Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.<br>
-           Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.<br>
-           Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.<br>
-           Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.<br>
-           Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur.<br>
-           Excepteur sint occaecat cupidatat non proident, sunt in culpa qui officia deserunt mollit anim id est laborum.<br>
-           (Scroll for more...)`);
+      .append("xhtml:div")
+      .html(`${demolitionImages[d.locality][3]}`);
   });
 
   return nodes;

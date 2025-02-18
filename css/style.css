@@ -30,13 +30,13 @@ body {
   font-weight: 300;
   font-size: 14px;
   overflow-x: hidden;
+  counter-reset: footnotes;
 }
 
 #footer {
   border-top: solid;
   padding-right: 10px;
   padding-left: 10px;
-  counter-reset: footnotes;
   margin: 0 auto 0 auto;
   position: relative;
 }
@@ -291,7 +291,7 @@ strong {
 }
 
 .footer-title {
-  font-size: 18px;
+  font-size: 16px;
   font-style: italic;
   text-align: left;
   padding: 2.5px;
@@ -330,7 +330,7 @@ strong {
   vertical-align: super;
   font-size: 0.75em;
   margin-left: 1px;
-  color: var(--primary-blue);
+  color: var(--palestinian);
   cursor: pointer;
 }
 

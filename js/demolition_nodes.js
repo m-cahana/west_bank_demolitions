@@ -90,7 +90,7 @@ export function initiateDemolitionNodes(
         .forceX((d) =>
           walkX(
             getRandomNumberBetween(
-              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 1,
+              (CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8,
               ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
             )
           )
