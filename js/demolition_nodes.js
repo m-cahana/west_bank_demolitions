@@ -195,8 +195,8 @@ export function splitNodesLeftRight(
   );
 
   const permitCategories = {
-    Granted: [walkX(BOUNDS.LEFT), 1],
-    Denied: [walkX(BOUNDS.RIGHT), 99],
+    Accepted: [walkX(BOUNDS.LEFT), 1],
+    Rejected: [walkX(BOUNDS.RIGHT), 99],
   };
 
   console.log(`walkX(BOUNDS.LEFT): ${walkX(BOUNDS.LEFT)}`);
