@@ -275,15 +275,6 @@ export function redrawGraphics({
   // [2] Update node dimensions and re-center them
   if (nodes && !nodes.empty() && [3, 4, 6].includes(activeIndex)) {
     nodes
-      .filter((d) => !d.tileNode)
-      .attr(
-        "width",
-        (d) => Math.sqrt(d.housing_units) * RECT.WIDTH * RECT_ADJUSTMENT_FACTOR
-      )
-      .attr(
-        "height",
-        (d) => Math.sqrt(d.housing_units) * RECT.HEIGHT * RECT_ADJUSTMENT_FACTOR
-      )
       .attr(
         "x",
         (d) =>
@@ -297,6 +288,21 @@ export function redrawGraphics({
           (Math.sqrt(d.housing_units) * RECT.HEIGHT * RECT_ADJUSTMENT_FACTOR) /
             2
       );
+
+    if (activeIndex != 6) {
+      nodes
+        .filter((d) => !d.tileNode)
+        .attr(
+          "width",
+          (d) =>
+            Math.sqrt(d.housing_units) * RECT.WIDTH * RECT_ADJUSTMENT_FACTOR
+        )
+        .attr(
+          "height",
+          (d) =>
+            Math.sqrt(d.housing_units) * RECT.HEIGHT * RECT_ADJUSTMENT_FACTOR
+        );
+    }
   }
 
   // [3] Update the simulation forces and restart the simulation
@@ -367,35 +373,24 @@ export function redrawGraphics({
     // Sort years in ascending order
     aggregatedData.sort((a, b) => d3.ascending(a[0], b[0]));
 
+    const chartHeight = ADJ_HEIGHT - BAR_MARGIN.TOP - BAR_MARGIN.BOTTOM;
+    const chartWidth = ADJ_WIDTH - BAR_MARGIN.LEFT - BAR_MARGIN.RIGHT;
+
     svg
       .select(".bar-chart")
-      .attr("transform", `translate(${BAR_MARGIN.left}, ${BAR_MARGIN.top})`);
+      .attr("transform", `translate(${BAR_MARGIN.LEFT}, ${BAR_MARGIN.TOP})`);
 
     svg
       .select(".x-axis")
-      .attr(
-        "transform",
-        `translate(0, ${ADJ_HEIGHT - BAR_MARGIN.top - BAR_MARGIN.bottom})`
-      )
+      .attr("transform", `translate(0, ${chartHeight})`)
       .call(
         d3.axisBottom(
           d3
             .scaleBand()
             .domain(aggregatedData.map((d) => d[0]))
-            .range([0, ADJ_WIDTH - BAR_MARGIN.left - BAR_MARGIN.right])
+            .range([0, chartWidth])
             .padding(0.2)
         )
-      );
-
-    svg
-      .select(".x-label")
-      .attr("x", (ADJ_WIDTH - BAR_MARGIN.left - BAR_MARGIN.right) / 2)
-      .attr(
-        "y",
-        ADJ_HEIGHT -
-          BAR_MARGIN.top -
-          BAR_MARGIN.bottom +
-          BAR_MARGIN.bottom * 1.1
       );
 
     svg.select(".y-axis").call(
@@ -404,13 +399,8 @@ export function redrawGraphics({
           .scaleLinear()
           .domain([0, d3.max(aggregatedData, (d) => d[1])])
           .nice()
-          .range([ADJ_HEIGHT - BAR_MARGIN.top - BAR_MARGIN.bottom, 0])
+          .range([chartHeight, 0])
       )
     );
-
-    svg
-      .select("y-label")
-      .attr("x", -(ADJ_HEIGHT - BAR_MARGIN.top - BAR_MARGIN.bottom) / 2)
-      .attr("y", -BAR_MARGIN.top * 1.2);
   }
 }

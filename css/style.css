@@ -258,6 +258,8 @@ strong {
 .x-label,
 .y-label {
   font-size: 16px;
+  font-family: "Helvetica";
+  font-weight: 300;
   text-anchor: middle;
   fill: #000;
 }

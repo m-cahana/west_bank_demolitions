@@ -4,7 +4,7 @@
 
 export function stackNodes(
   palestinianDemolitions,
-  svg,
+  mapSvg,
   ADJ_WIDTH,
   ADJ_HEIGHT,
   nodes,
@@ -17,36 +17,36 @@ export function stackNodes(
     (v) => d3.sum(v, (d) => d.people_left_homeless),
     (d) => d.date_of_demolition.getFullYear()
   );
-  // For quick look-up of the aggregated sum for each year:
+  // Quickly look up the aggregated sum for each year
   const aggregatedMap = new Map(aggregatedData);
   // Sort years in ascending order
   aggregatedData.sort((a, b) => d3.ascending(a[0], b[0]));
 
-  // --- Chart Dimensions and Scales ---
-  const width = ADJ_WIDTH - BAR_MARGIN.left - BAR_MARGIN.right;
-  const height = ADJ_HEIGHT - BAR_MARGIN.top - BAR_MARGIN.bottom;
+  // Calculate the effective chart dimensions.
+  // The available drawing area for the bar chart is the adjusted height minus top and bottom margins.
+  const chartHeight = ADJ_HEIGHT - BAR_MARGIN.TOP - BAR_MARGIN.BOTTOM;
+  const chartWidth = ADJ_WIDTH - BAR_MARGIN.LEFT - BAR_MARGIN.RIGHT;
 
-  // Create or update the bar chart group for axes and labels
-  let barChart = svg.select(".bar-chart");
-  const adjustedLeftMargin =
-    window.innerWidth < 1099 ? BAR_MARGIN.left / 2 : BAR_MARGIN.left;
+  // Create or update the bar chart group for axes and labels.
+  // In this implementation, we translate the entire bar chart by (BAR_MARGIN.LEFT, BAR_MARGIN.TOP).
+  let barChart = mapSvg.select(".bar-chart");
   if (barChart.empty()) {
-    barChart = svg
+    barChart = mapSvg
       .append("g")
       .attr("class", "bar-chart")
-      .attr("transform", `translate(${adjustedLeftMargin},${BAR_MARGIN.top})`);
+      .attr("transform", `translate(${BAR_MARGIN.LEFT}, ${BAR_MARGIN.TOP})`);
 
-    // Append X axis group.
+    // Append the X axis group and position it at the bottom of the chart area.
     barChart
       .append("g")
       .attr("class", "x-axis")
-      .attr("transform", `translate(0, ${height})`)
+      .attr("transform", `translate(0, ${chartHeight})`)
       .call(
         d3.axisBottom(
           d3
             .scaleBand()
             .domain(aggregatedData.map((d) => d[0]))
-            .range([0, width])
+            .range([0, chartWidth])
             .padding(0.2)
         )
       )
@@ -54,7 +54,17 @@ export function stackNodes(
       .attr("transform", "translate(-10,0)rotate(-45)")
       .style("text-anchor", "end");
 
-    // Append Y axis group.
+    // Append the x-axis label (centered).
+    barChart
+      .append("text")
+      .attr("class", "x-label")
+      .attr("text-anchor", "middle")
+      .attr("x", chartWidth / 2)
+      // Place the label below the x-axis. Adjust the offset (e.g., +BAR_MARGIN.BOTTOM - 10) as needed.
+      .attr("y", chartHeight + BAR_MARGIN.BOTTOM)
+      .text("Year");
+
+    // Append the Y axis group.
     barChart
       .append("g")
       .attr("class", "y-axis")
@@ -64,46 +74,45 @@ export function stackNodes(
             .scaleLinear()
             .domain([0, d3.max(aggregatedData, (d) => d[1])])
             .nice()
-            .range([height, 0])
+            .range([chartHeight, 0])
         )
       );
 
-    // Append y-axis label.
+    // Append the y-axis label (centered and rotated).
     barChart
       .append("text")
       .attr("class", "y-label")
+      .attr("text-anchor", "middle")
+      // Set x to be centered in the chart area (negative because we're rotating).
+      .attr("x", -chartHeight / 2)
+      // Move it to the left with an offset. Adjust as needed for better placement.
+      .attr("y", -BAR_MARGIN.LEFT + 30)
       .attr("transform", "rotate(-90)")
-      .attr("x", -height / 2)
-      .attr("y", -BAR_MARGIN.top * 1.2)
-      .attr("dy", "1em")
-      .style("text-anchor", "middle")
       .text("People Left Homeless");
-
-    // Append x-axis label.
-    barChart
-      .append("text")
-      .attr("class", "x-label")
-      .attr("x", width / 2)
-      .attr("y", height + BAR_MARGIN.bottom * 1.1)
-      .style("text-anchor", "middle")
-      .text("Year");
   } else {
-    // If the group already exists, ensure the axes and labels are visible.
+    // If the group already exists, ensure the axes and labels are shown.
     barChart
       .selectAll(".x-axis, .y-axis, .x-label, .y-label")
       .style("display", "block")
-      .style("opacity", 1)
-      .attr("transform", `translate(${adjustedLeftMargin},${BAR_MARGIN.top})`);
+      .style("opacity", 1);
   }
 
   // --- Stack the Nodes by Year without reparenting ---
-  // Get the actual DOM nodes from the D3 selection.
+  // Get actual DOM nodes from the D3 selection.
   const nodeElements = nodes.nodes();
 
-  // Group node elements by year.
+  // Group node elements by the demolition year.
   const nodesByYear = d3.group(nodeElements, (el) =>
     el.__data__.date_of_demolition.getFullYear()
   );
+
+  // Create an x scale for node positioning using the same range as the axis.
+  const xScale = d3
+    .scaleBand()
+    .domain(aggregatedData.map((d) => d[0]))
+    .range([BAR_MARGIN.LEFT, chartWidth + BAR_MARGIN.LEFT])
+    .padding(0.2);
+  const nodeWidth = xScale.bandwidth() / 3;
 
   nodesByYear.forEach((elements, year) => {
     // Optionally sort nodes within the group.
@@ -114,59 +123,50 @@ export function stackNodes(
       )
     );
 
-    // Sum of the square roots of people_left_homeless for this year.
+    // Total of square roots of people_left_homeless for this year.
     const totalSqrt = d3.sum(elements, (el) =>
       Math.sqrt(el.__data__.people_left_homeless)
     );
 
-    // The aggregated sum gives us the total height of the bar.
+    // The aggregated sum gives the full height of the bar.
     const aggregatedSum = aggregatedMap.get(year);
-    const barPixelHeight =
-      height -
-      d3
-        .scaleLinear()
-        .domain([0, d3.max(aggregatedData, (d) => d[1])])
-        .nice()
-        .range([height, 0])(aggregatedSum);
+    const yScale = d3
+      .scaleLinear()
+      .domain([0, d3.max(aggregatedData, (d) => d[1])])
+      .nice()
+      .range([chartHeight, 0]);
+    // Compute the bar's pixel height from the chart area
+    const barPixelHeight = chartHeight - yScale(aggregatedSum);
 
-    // A scale factor to convert each node's sqrt value to a pixel height.
+    // Scale factor to convert each node's sqrt value to pixel height.
     const scaleFactor = totalSqrt > 0 ? barPixelHeight / totalSqrt : 0;
 
-    let cumulative = 0; // running total for stacking the nodes
-
-    // Compute the node width as a fraction of the available band.
-    const xScale = d3
-      .scaleBand()
-      .domain(aggregatedData.map((d) => d[0]))
-      .range([0, width])
-      .padding(0.2);
-    const nodeWidth = xScale.bandwidth() / 3;
-
+    let cumulative = 0; // Running total for stacking the nodes.
     elements.forEach((node) => {
       const d = node.__data__;
       const sqrtValue = Math.sqrt(d.people_left_homeless);
       const nodeHeight = sqrtValue * scaleFactor;
       cumulative += nodeHeight;
 
-      // Compute base positions relative to the bar chart coordinate system.
-      // xScale(year) gives the left edge of the band for that year.
-      // We center the node by offsetting half the difference between the band and node width.
-      const baseX = xScale(year) + (xScale.bandwidth() - nodeWidth);
-      const baseY = height - cumulative;
+      // Compute base x and y in the chart's coordinate space.
+      const baseX = xScale(year);
+      // baseY is measured from the bottom of the chart area (chartHeight)
+      const baseY = chartHeight - cumulative;
 
-      // Add the margin offset to align with the bar chart's placement.
-      // Since we're not reparenting, the nodes remain in the original container.
-      const finalX = baseX + BAR_MARGIN.left / 2;
-      const finalY = baseY;
+      // Since the nodes are drawn in the overall SVG (mapSvg) and not within the translated barChart group,
+      // we add the same margin offsets used in the barChart transform.
+      const newX = baseX + xScale.bandwidth() / 2 - nodeWidth / 2;
+      const newY = baseY + BAR_MARGIN.TOP;
 
-      node.__data__.x = finalX;
-      node.__data__.y = finalY;
+      // Update the node's position.
+      d.x = newX;
+      d.y = newY;
 
       d3.select(node)
         .transition()
         .duration(1000)
-        .attr("x", (d) => d.x)
-        .attr("y", (d) => d.y)
+        .attr("x", newX)
+        .attr("y", newY)
         .attr("width", nodeWidth)
         .attr("height", nodeHeight)
         .attr("opacity", RECT.OPACITY);

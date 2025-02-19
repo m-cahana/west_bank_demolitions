@@ -30,7 +30,7 @@ let HEIGHT = 500;
 let HEIGHT_WIDTH_RATIO = HEIGHT / WIDTH;
 let lineLabelOffset = -50;
 
-const BAR_MARGIN = { top: 50, right: 30, bottom: 50, left: 200 };
+const BAR_MARGIN = { TOP: 50, RIGHT: 30, BOTTOM: 50, LEFT: 70 };
 const RECT = {
   WIDTH: 5,
   HEIGHT: 5,
@@ -428,7 +428,7 @@ let activationFunctions = [
     svg = rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN);
     stackNodes(
       palestinianDemolitions,
-      svg,
+      mapSvg,
       ADJ_WIDTH,
       ADJ_HEIGHT,
       nodes,
