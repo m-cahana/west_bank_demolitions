@@ -50,6 +50,7 @@ export class AnimatedLine {
     walkY,
     lineGenerator,
     labelText = null,
+    RECT_ADJUSTMENT_FACTOR,
     animationSpeed = 5,
     strokeWidth = 3
   ) {
@@ -82,7 +83,7 @@ export class AnimatedLine {
       this.text = lineGroup
         .append("text")
         .attr("class", "dubois-label")
-        .attr("x", walkX(-10))
+        .attr("x", walkX(-10 / RECT_ADJUSTMENT_FACTOR))
         .attr("y", walkY(firstPoint.value - 1.5))
         .attr("dy", "-0.5em")
         .attr("fill", color)
@@ -284,7 +285,8 @@ export function drawIsraeliLines(
   line,
   STEP_CONFIG,
   israeliLine,
-  lineLabelOffset
+  lineLabelOffset,
+  RECT_ADJUSTMENT_FACTOR
 ) {
   if (!israeliLineRedraw) {
     svg.selectAll(".dubois-label-year").attr("display", "block");
@@ -312,7 +314,8 @@ export function drawIsraeliLines(
       walkX,
       walkY,
       line,
-      0
+      0,
+      RECT_ADJUSTMENT_FACTOR
     );
 
     const israeliLineData = d3.select(".israeli-line-path").datum();

@@ -181,7 +181,7 @@ export function splitNodesLeftRight(
     LEFT: ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 10) * 1 - BUFFER_LEFT,
     RIGHT:
       ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 10) * 10 - BUFFER_RIGHT,
-    TOP: 90,
+    TOP: 80,
     BOTTOM: 0,
   };
 
@@ -230,10 +230,7 @@ export function splitNodesLeftRight(
     // Position the group at the desired center
     .attr(
       "transform",
-      (d) =>
-        `translate(${permitCategories[d][0]}, ${walkY(
-          BOUNDS.TOP + 7.5 / RECT_ADJUSTMENT_FACTOR
-        )})`
+      (d) => `translate(${permitCategories[d][0]}, ${walkY(BOUNDS.TOP + 10)})`
     )
     .each(function (d) {
       const g = d3.select(this);
@@ -251,8 +248,10 @@ export function splitNodesLeftRight(
       const textNode = textEl.node();
       const textWidth = textNode.getComputedTextLength();
       const bbox = textNode.getBBox();
-      const rectWidth = textWidth + 2 * PERMIT_TEXT.width_padding;
-      const rectHeight = bbox.height + 2 * PERMIT_TEXT.height_padding;
+      const rectWidth =
+        textWidth + 2 * PERMIT_TEXT.width_padding * RECT_ADJUSTMENT_FACTOR;
+      const rectHeight =
+        bbox.height + 2 * PERMIT_TEXT.height_padding * RECT_ADJUSTMENT_FACTOR;
 
       // Instead of setting x and y offsets on the rectangle,
       // insert it at (0,0) and apply a transform to shift it by half its width/height.

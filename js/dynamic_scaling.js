@@ -74,7 +74,8 @@ function updatePermitLabels(
   walkX,
   walkY,
   CORE_XY_DOMAIN,
-  PERMIT_TEXT
+  PERMIT_TEXT,
+  RECT_ADJUSTMENT_FACTOR
 ) {
   // Use a timeout to allow the browser to reflow the text elements
   setTimeout(() => {
@@ -87,7 +88,7 @@ function updatePermitLabels(
         ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 10) * 1 - BUFFER_LEFT,
       RIGHT:
         ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 10) * 10 - BUFFER_RIGHT,
-      TOP: 90,
+      TOP: 80,
       BOTTOM: 0,
     };
 
@@ -97,10 +98,7 @@ function updatePermitLabels(
       Denied: [walkX(BOUNDS.RIGHT), 99],
     };
 
-    // Conditionally adjust the vertical position on smaller screens.
-    const yValueAdjustment =
-      ADJ_WIDTH < 600 ? BOUNDS.TOP + 3 : BOUNDS.TOP + 7.5;
-    const yPosition = walkY(yValueAdjustment);
+    const yPosition = walkY(BOUNDS.TOP);
 
     // Now update each permit label.
     d3.selectAll("g.permit-label").each(function (d) {
@@ -123,8 +121,10 @@ function updatePermitLabels(
         const textWidth = textNode.getComputedTextLength();
 
         // Calculate the new rectangle dimensions using padding.
-        const rectWidth = textWidth + 2 * PERMIT_TEXT.width_padding;
-        const rectHeight = bbox.height + 2 * PERMIT_TEXT.height_padding;
+        const rectWidth =
+          textWidth + 2 * PERMIT_TEXT.width_padding * RECT_ADJUSTMENT_FACTOR;
+        const rectHeight =
+          bbox.height + 2 * PERMIT_TEXT.height_padding * RECT_ADJUSTMENT_FACTOR;
 
         // Update the background rectangle so that it remains centered behind the text.
         g.select("rect.label-rect")
@@ -191,7 +191,7 @@ export function redrawGraphics({
       if (instance.text) {
         const firstPoint = instance.data[0];
         instance.text
-          .attr("x", walkX(-10))
+          .attr("x", walkX(-10 / RECT_ADJUSTMENT_FACTOR))
           .attr("y", walkY(firstPoint.value - 1.5));
       }
     });
@@ -326,7 +326,7 @@ export function redrawGraphics({
         )
         .strength(0.075)
     );
-    simulation.alpha(0.75).restart();
+    simulation.alpha(1).restart();
   }
 
   // [4] Update tileNodes layout based on the new dimensions.
@@ -338,7 +338,14 @@ export function redrawGraphics({
 
   // [5] Finally, update the positions and sizes of the permit labels.
   setTimeout(() => {
-    updatePermitLabels(ADJ_WIDTH, walkX, walkY, CORE_XY_DOMAIN, PERMIT_TEXT);
+    updatePermitLabels(
+      ADJ_WIDTH,
+      walkX,
+      walkY,
+      CORE_XY_DOMAIN,
+      PERMIT_TEXT,
+      RECT_ADJUSTMENT_FACTOR
+    );
   }, 50);
 
   // update bar chart

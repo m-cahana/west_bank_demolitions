@@ -281,7 +281,8 @@ function drawInitial() {
       walkX,
       walkY,
       line,
-      `${d.year} - ${d.permits}`
+      `${d.year} - ${d.permits}`,
+      RECT_ADJUSTMENT_FACTOR
     );
 
     animatedLines.push(lineInstance);
@@ -373,7 +374,8 @@ let activationFunctions = [
         line,
         STEP_CONFIG,
         israeliLine,
-        lineLabelOffset
+        lineLabelOffset,
+        RECT_ADJUSTMENT_FACTOR
       );
     });
     hideDemolitionNodes(svg);
