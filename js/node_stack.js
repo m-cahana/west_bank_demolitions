@@ -28,11 +28,13 @@ export function stackNodes(
 
   // Create or update the bar chart group for axes and labels
   let barChart = svg.select(".bar-chart");
+  const adjustedLeftMargin =
+    window.innerWidth < 1099 ? BAR_MARGIN.left / 2 : BAR_MARGIN.left;
   if (barChart.empty()) {
     barChart = svg
       .append("g")
       .attr("class", "bar-chart")
-      .attr("transform", `translate(${BAR_MARGIN.left},${BAR_MARGIN.top})`);
+      .attr("transform", `translate(${adjustedLeftMargin},${BAR_MARGIN.top})`);
 
     // Append X axis group.
     barChart
@@ -90,7 +92,8 @@ export function stackNodes(
     barChart
       .selectAll(".x-axis, .y-axis, .x-label, .y-label")
       .style("display", "block")
-      .style("opacity", 1);
+      .style("opacity", 1)
+      .attr("transform", `translate(${adjustedLeftMargin},${BAR_MARGIN.top})`);
   }
 
   // --- Stack the Nodes by Year without reparenting ---

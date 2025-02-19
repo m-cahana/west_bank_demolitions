@@ -577,12 +577,6 @@ strong {
     fill: black;
   }
 
-  .dubois-line,
-  .israeli-line-path,
-  [class^="palestinian-"] {
-    stroke-width: 2px;
-  }
-
   .dubois-label,
   .dubois-label-decade,
   .dubois-label-year {
@@ -610,12 +604,6 @@ strong {
   .x-label,
   .y-label {
     font-size: 14px;
-  }
-
-  .dubois-line,
-  .israeli-line-path,
-  [class^="palestinian-"] {
-    stroke-width: 1px;
   }
 
   /* Caption text styling */

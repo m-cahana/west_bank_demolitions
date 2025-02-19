@@ -168,6 +168,7 @@ function redrawAll() {
     BAR_MARGIN,
     palestinianPermits,
     CORE_Y_START,
+    MARGIN,
   });
 }
 
@@ -199,30 +200,7 @@ function handleResize() {
     svg
   ));
 
-  // Re-render elements that depend on the updated scales and dimensions
-  redrawGraphics({
-    animatedLines,
-    svg,
-    walkX,
-    walkY,
-    ADJ_WIDTH,
-    ADJ_HEIGHT,
-    line,
-    lineLabelOffset,
-    STEP_CONFIG,
-    nodes,
-    RECT,
-    RECT_ADJUSTMENT_FACTOR,
-    CORE_XY_DOMAIN,
-    map,
-    simulation,
-    PERMIT_TEXT,
-    palestinianDemolitions,
-    activeIndex,
-    BAR_MARGIN,
-    palestinianPermits,
-    CORE_Y_START,
-  });
+  redrawAll();
 }
 
 function drawInitial() {
@@ -439,6 +417,7 @@ let activationFunctions = [
     nodes = attachTooltip(nodes, tooltip, true);
     svg = rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN);
     hideBarChartAxesAndLabels();
+    redrawAll();
   },
   () => {
     animationController.pause();

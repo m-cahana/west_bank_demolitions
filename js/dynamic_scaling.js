@@ -184,6 +184,7 @@ export function redrawGraphics({
   BAR_MARGIN,
   palestinianPermits,
   CORE_Y_START,
+  MARGIN,
 }) {
   if (activeIndex == 0) {
     animatedLines.forEach((instance) => {
@@ -272,7 +273,7 @@ export function redrawGraphics({
   }
 
   // [2] Update node dimensions and re-center them
-  if (nodes && !nodes.empty() && activeIndex >= 3) {
+  if (nodes && !nodes.empty() && [3, 4, 6].includes(activeIndex)) {
     nodes
       .filter((d) => !d.tileNode)
       .attr(
@@ -331,9 +332,17 @@ export function redrawGraphics({
 
   // [4] Update tileNodes layout based on the new dimensions.
   // Make sure to pass your data array for Palestinian demolitions.
-  if (palestinianDemolitions && nodes && activeIndex == 6) {
+  if (palestinianDemolitions && nodes && activeIndex == 7) {
     simulation.stop();
-    tileNodes(svg, palestinianDemolitions, ADJ_HEIGHT, nodes, RECT);
+    tileNodes(
+      svg,
+      palestinianDemolitions,
+      MARGIN,
+      ADJ_HEIGHT,
+      nodes,
+      RECT,
+      RECT_ADJUSTMENT_FACTOR
+    );
   }
 
   // [5] Finally, update the positions and sizes of the permit labels.
@@ -349,42 +358,59 @@ export function redrawGraphics({
   }, 50);
 
   // update bar chart
+  if (activeIndex == 6) {
+    const aggregatedData = d3.rollups(
+      palestinianDemolitions,
+      (v) => d3.sum(v, (d) => d.people_left_homeless),
+      (d) => d.date_of_demolition.getFullYear()
+    );
+    // Sort years in ascending order
+    aggregatedData.sort((a, b) => d3.ascending(a[0], b[0]));
 
-  const aggregatedData = d3.rollups(
-    palestinianDemolitions,
-    (v) => d3.sum(v, (d) => d.people_left_homeless),
-    (d) => d.date_of_demolition.getFullYear()
-  );
-  // Sort years in ascending order
-  aggregatedData.sort((a, b) => d3.ascending(a[0], b[0]));
+    svg
+      .select(".bar-chart")
+      .attr("transform", `translate(${BAR_MARGIN.left}, ${BAR_MARGIN.top})`);
 
-  svg
-    .select(".bar-chart")
-    .attr("transform", `translate(${BAR_MARGIN.left}, ${BAR_MARGIN.top})`);
+    svg
+      .select(".x-axis")
+      .attr(
+        "transform",
+        `translate(0, ${ADJ_HEIGHT - BAR_MARGIN.top - BAR_MARGIN.bottom})`
+      )
+      .call(
+        d3.axisBottom(
+          d3
+            .scaleBand()
+            .domain(aggregatedData.map((d) => d[0]))
+            .range([0, ADJ_WIDTH - BAR_MARGIN.left - BAR_MARGIN.right])
+            .padding(0.2)
+        )
+      );
 
-  svg
-    .select(".x-axis")
-    .attr(
-      "transform",
-      `translate(0, ${ADJ_HEIGHT - BAR_MARGIN.top - BAR_MARGIN.bottom})`
-    )
-    .call(
-      d3.axisBottom(
+    svg
+      .select(".x-label")
+      .attr("x", (ADJ_WIDTH - BAR_MARGIN.left - BAR_MARGIN.right) / 2)
+      .attr(
+        "y",
+        ADJ_HEIGHT -
+          BAR_MARGIN.top -
+          BAR_MARGIN.bottom +
+          BAR_MARGIN.bottom * 1.1
+      );
+
+    svg.select(".y-axis").call(
+      d3.axisLeft(
         d3
-          .scaleBand()
-          .domain(aggregatedData.map((d) => d[0]))
-          .range([0, ADJ_WIDTH - BAR_MARGIN.left - BAR_MARGIN.right])
-          .padding(0.2)
+          .scaleLinear()
+          .domain([0, d3.max(aggregatedData, (d) => d[1])])
+          .nice()
+          .range([ADJ_HEIGHT - BAR_MARGIN.top - BAR_MARGIN.bottom, 0])
       )
     );
 
-  svg.select(".y-axis").call(
-    d3.axisLeft(
-      d3
-        .scaleLinear()
-        .domain([0, d3.max(aggregatedData, (d) => d[1])])
-        .nice()
-        .range([ADJ_HEIGHT - BAR_MARGIN.top - BAR_MARGIN.bottom, 0])
-    )
-  );
+    svg
+      .select("y-label")
+      .attr("x", -(ADJ_HEIGHT - BAR_MARGIN.top - BAR_MARGIN.bottom) / 2)
+      .attr("y", -BAR_MARGIN.top * 1.2);
+  }
 }
