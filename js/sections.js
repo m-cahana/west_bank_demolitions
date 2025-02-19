@@ -145,6 +145,32 @@ initialize();
 // Initialize tooltip once
 const tooltip = d3.select("body").append("div").attr("class", "tooltip");
 
+function redrawAll() {
+  redrawGraphics({
+    animatedLines,
+    svg,
+    walkX,
+    walkY,
+    ADJ_WIDTH,
+    ADJ_HEIGHT,
+    line,
+    lineLabelOffset,
+    STEP_CONFIG,
+    nodes,
+    RECT,
+    RECT_ADJUSTMENT_FACTOR,
+    CORE_XY_DOMAIN,
+    map,
+    simulation,
+    PERMIT_TEXT,
+    palestinianDemolitions,
+    activeIndex,
+    BAR_MARGIN,
+    palestinianPermits,
+    CORE_Y_START,
+  });
+}
+
 // Call updateDimensions and then update the graphics
 function handleResize() {
   ({
@@ -193,6 +219,9 @@ function handleResize() {
     PERMIT_TEXT,
     palestinianDemolitions,
     activeIndex,
+    BAR_MARGIN,
+    palestinianPermits,
+    CORE_Y_START,
   });
 }
 
@@ -350,7 +379,9 @@ let activationFunctions = [
     hideDemolitionNodes(svg);
   },
   () => {
-    israeliLine.flush();
+    if (israeliLine) {
+      israeliLine.flush();
+    }
     hideIsraeliLines(svg);
     hidePalestinianLines(palestinianPermits, svg);
     ({ simulation, nodes, israeliLineRedraw } = initiateDemolitionNodes(
@@ -363,7 +394,8 @@ let activationFunctions = [
       walkX,
       walkY,
       CORE_XY_DOMAIN,
-      tooltip
+      tooltip,
+      RECT_ADJUSTMENT_FACTOR
     ));
     removePermitLabels(svg);
   },
@@ -391,6 +423,9 @@ let activationFunctions = [
     ({ map, animationController } = drawMap(
       mapGenerate,
       map,
+      svg,
+      ADJ_WIDTH,
+      ADJ_HEIGHT,
       demolitionDates,
       nodes,
       RECT,

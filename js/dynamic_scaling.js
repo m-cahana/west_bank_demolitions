@@ -1,5 +1,6 @@
 import { getRandomNumberBetween } from "./helper_functions.js";
 import { tileNodes } from "./tiles.js";
+import { duBoisLine, consolidatePalestinianLines } from "./lines.js";
 
 export function debounce(func, wait) {
   let timeout;
@@ -180,50 +181,98 @@ export function redrawGraphics({
   PERMIT_TEXT,
   palestinianDemolitions,
   activeIndex,
+  BAR_MARGIN,
+  palestinianPermits,
+  CORE_Y_START,
 }) {
-  // [1] Update animated lines and other SVG elements
-  animatedLines.forEach((instance) => {
-    instance.path.attr("d", line(instance.data));
-    if (instance.text) {
-      const firstPoint = instance.data[0];
-      instance.text
-        .attr("x", walkX(-10))
-        .attr("y", walkY(firstPoint.value - 1.5));
+  if (activeIndex == 0) {
+    animatedLines.forEach((instance) => {
+      instance.path.attr("d", line(instance.data));
+      if (instance.text) {
+        const firstPoint = instance.data[0];
+        instance.text
+          .attr("x", walkX(-10))
+          .attr("y", walkY(firstPoint.value - 1.5));
+      }
+    });
+
+    svg.selectAll("path.palestinian-line-path").each(function (d) {
+      d3.select(this).attr("d", line(d));
+    });
+  }
+  if (activeIndex == 2) {
+    let israeliPath = svg.select(".israeli-line-path");
+    if (!israeliPath.empty()) {
+      const israeliData = israeliPath.datum();
+      israeliPath.attr("d", line(israeliData));
+
+      let israeliLabel = svg.select(".dubois-label-year");
+      if (!israeliLabel.empty() && israeliData && israeliData.length > 0) {
+        const firstIsraeliPoint = israeliData[0];
+        const baseXYear = walkX(firstIsraeliPoint.step);
+        israeliLabel
+          .attr("x", baseXYear + lineLabelOffset)
+          .attr("y", walkY(STEP_CONFIG.Y_START + 1.75));
+      }
     }
-  });
+    let palestinianLabel = svg.select(".dubois-label-decade");
+    if (!palestinianLabel.empty() && palestinianPermits) {
+      const consolidatedPermits = palestinianPermits.reduce(
+        (sum, d) => sum + d.permits,
+        0
+      );
 
-  svg.selectAll("path.palestinian-line-path").each(function (d) {
-    d3.select(this).attr("d", line(d));
-  });
+      const consolidatedPathData = duBoisLine(
+        consolidatedPermits,
+        STEP_CONFIG.LENGTH,
+        CORE_Y_START,
+        STEP_CONFIG.Y_CHANGE,
+        false,
+        STEP_CONFIG.STEPS_UNTIL_TURN
+      );
 
-  let israeliPath = svg.select(".israeli-line-path");
-  if (!israeliPath.empty()) {
-    const israeliData = israeliPath.datum();
-    israeliPath.attr("d", line(israeliData));
+      const firstPoint = consolidatedPathData[0];
+      console.log(`firstPoint.value: ${firstPoint.value}`);
 
-    let israeliLabel = svg.select(".dubois-label-year");
-    if (!israeliLabel.empty() && israeliData && israeliData.length > 0) {
-      const firstIsraeliPoint = israeliData[0];
-      const baseXYear = walkX(firstIsraeliPoint.step);
-      israeliLabel
-        .attr("x", baseXYear + lineLabelOffset * 1.27)
-        .attr("y", walkY(STEP_CONFIG.Y_START + 1.75));
+      palestinianLabel
+        .attr("x", walkX(firstPoint.step) + lineLabelOffset)
+        .attr("y", walkY(firstPoint.value + 3));
+
+      let index_counter = 0;
+      palestinianPermits.forEach((d) => {
+        svg
+          .select(`.palestinian-${d.year}-line-path`)
+          .transition()
+          .duration(0) // duration in milliseconds
+          .attr(
+            "d",
+            line(
+              consolidatedPathData.slice(
+                index_counter,
+                index_counter + d.permits
+              )
+            )
+          );
+        index_counter += d.permits - 1;
+      });
     }
   }
 
-  svg
-    .select(".map-foreignobject")
-    .attr("width", ADJ_WIDTH)
-    .attr("height", ADJ_HEIGHT)
-    .style("width", `${ADJ_WIDTH}px`)
-    .style("height", `${ADJ_HEIGHT}px`);
+  if (activeIndex == 5) {
+    svg
+      .select(".map-foreignobject")
+      .attr("width", ADJ_WIDTH)
+      .attr("height", ADJ_HEIGHT)
+      .style("width", `${ADJ_WIDTH}px`)
+      .style("height", `${ADJ_HEIGHT}px`);
 
-  if (map && typeof map.resize === "function") {
-    map.resize();
+    if (map && typeof map.resize === "function") {
+      map.resize();
+    }
   }
 
   // [2] Update node dimensions and re-center them
-  if (nodes && !nodes.empty()) {
+  if (nodes && !nodes.empty() && activeIndex >= 3) {
     nodes
       .filter((d) => !d.tileNode)
       .attr(
@@ -250,7 +299,7 @@ export function redrawGraphics({
   }
 
   // [3] Update the simulation forces and restart the simulation
-  if (simulation) {
+  if (simulation && activeIndex == 3) {
     simulation.force(
       "forceX",
       d3
@@ -293,4 +342,42 @@ export function redrawGraphics({
   }, 50);
 
   // update bar chart
+
+  const aggregatedData = d3.rollups(
+    palestinianDemolitions,
+    (v) => d3.sum(v, (d) => d.people_left_homeless),
+    (d) => d.date_of_demolition.getFullYear()
+  );
+  // Sort years in ascending order
+  aggregatedData.sort((a, b) => d3.ascending(a[0], b[0]));
+
+  svg
+    .select(".bar-chart")
+    .attr("transform", `translate(${BAR_MARGIN.left}, ${BAR_MARGIN.top})`);
+
+  svg
+    .select(".x-axis")
+    .attr(
+      "transform",
+      `translate(0, ${ADJ_HEIGHT - BAR_MARGIN.top - BAR_MARGIN.bottom})`
+    )
+    .call(
+      d3.axisBottom(
+        d3
+          .scaleBand()
+          .domain(aggregatedData.map((d) => d[0]))
+          .range([0, ADJ_WIDTH - BAR_MARGIN.left - BAR_MARGIN.right])
+          .padding(0.2)
+      )
+    );
+
+  svg.select(".y-axis").call(
+    d3.axisLeft(
+      d3
+        .scaleLinear()
+        .domain([0, d3.max(aggregatedData, (d) => d[1])])
+        .nice()
+        .range([ADJ_HEIGHT - BAR_MARGIN.top - BAR_MARGIN.bottom, 0])
+    )
+  );
 }

@@ -156,11 +156,14 @@ export function stackNodes(
       const finalX = baseX + BAR_MARGIN.left / 2;
       const finalY = baseY;
 
+      node.__data__.x = finalX;
+      node.__data__.y = finalY;
+
       d3.select(node)
         .transition()
         .duration(1000)
-        .attr("x", finalX)
-        .attr("y", finalY)
+        .attr("x", (d) => d.x)
+        .attr("y", (d) => d.y)
         .attr("width", nodeWidth)
         .attr("height", nodeHeight)
         .attr("opacity", RECT.OPACITY);

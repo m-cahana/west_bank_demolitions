@@ -175,6 +175,7 @@ export function consolidatePalestinianLines(
     svg.selectAll(".dubois-label").attr("display", "none");
 
     const firstPoint = consolidatedPathData[0];
+    console.log(`firstPoint.value: ${firstPoint.value}`);
     const baseX = walkX(firstPoint.step); // Dynamically compute the x position
 
     // Append a new consolidated label

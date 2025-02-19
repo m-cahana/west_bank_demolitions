@@ -67,6 +67,9 @@ export const AnimationController = function (demolitionDates, nodes, RECT) {
 export function drawMap(
   mapGenerate,
   map,
+  svg,
+  ADJ_WIDTH,
+  ADJ_HEIGHT,
   demolitionDates,
   nodes,
   RECT,
@@ -111,6 +114,13 @@ export function drawMap(
         console.error("Error during node transition:", error);
       }
     })();
+
+    svg
+      .select(".map-foreignobject")
+      .attr("width", ADJ_WIDTH)
+      .attr("height", ADJ_HEIGHT)
+      .style("width", `${ADJ_WIDTH}px`)
+      .style("height", `${ADJ_HEIGHT}px`);
   }
 
   // Select existing 'date-display' or create it if it doesn't exist

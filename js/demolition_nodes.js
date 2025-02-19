@@ -14,7 +14,8 @@ export function initiateDemolitionNodes(
   walkX,
   walkY,
   CORE_XY_DOMAIN,
-  tooltip
+  tooltip,
+  RECT_ADJUSTMENT_FACTOR
 ) {
   israeliLineRedraw = false;
 
@@ -41,8 +42,14 @@ export function initiateDemolitionNodes(
     .append("rect")
     .attr("class", "nodes")
     .style("pointer-events", "all")
-    .attr("width", (d) => d.housing_units ** (1 / 2) * RECT.WIDTH)
-    .attr("height", (d) => d.housing_units ** (1 / 2) * RECT.HEIGHT)
+    .attr(
+      "width",
+      (d) => d.housing_units ** (1 / 2) * RECT.WIDTH * RECT_ADJUSTMENT_FACTOR
+    )
+    .attr(
+      "height",
+      (d) => d.housing_units ** (1 / 2) * RECT.HEIGHT * RECT_ADJUSTMENT_FACTOR
+    )
     .attr("opacity", RECT.OPACITY)
     .on("mouseover", function (event, d) {
       console.log("mouseover");
