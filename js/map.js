@@ -78,6 +78,12 @@ export function drawMap(
   palestinianDemolitions,
   RECT_ADJUSTMENT_FACTOR
 ) {
+  svg
+    .select(".map-foreignobject")
+    .attr("width", ADJ_WIDTH)
+    .attr("height", ADJ_HEIGHT)
+    .style("width", `${ADJ_WIDTH}px`)
+    .style("height", `${ADJ_HEIGHT}px`);
   if (mapGenerate) {
     // Set your Mapbox access token
     mapboxgl.accessToken =
@@ -114,13 +120,6 @@ export function drawMap(
         console.error("Error during node transition:", error);
       }
     })();
-
-    svg
-      .select(".map-foreignobject")
-      .attr("width", ADJ_WIDTH)
-      .attr("height", ADJ_HEIGHT)
-      .style("width", `${ADJ_WIDTH}px`)
-      .style("height", `${ADJ_HEIGHT}px`);
   }
 
   // Select existing 'date-display' or create it if it doesn't exist
