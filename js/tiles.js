@@ -36,75 +36,44 @@ export function boxSVG(svg, MARGIN, ADJ_WIDTH, ADJ_HEIGHT) {
 }
 
 /**
- * Calculates the number of columns and rows for a grid layout.
- *
- * @param {number} N - Number of tiles.
- * @param {number} svgWidth - Width of the SVG.
- * @param {number} svgHeight - Height of the SVG.
- * @returns {Object} - Contains the number of columns, rows, and tile size.
- */
-function calculateGridLayout(N, svgWidth, svgHeight) {
-  const aspectRatio = svgWidth / svgHeight;
-
-  // Initial estimation of columns based on aspect ratio
-  let cols = Math.ceil(Math.sqrt(N * aspectRatio));
-  let rows = Math.ceil(N / cols);
-
-  // Adjust columns and rows to ensure all tiles fit
-  while (cols * rows < N) {
-    cols += 1;
-    rows = Math.ceil(N / cols);
-  }
-
-  // Calculate tile size based on grid layout
-  const tileWidth = svgWidth / cols;
-  const tileHeight = svgHeight / rows;
-
-  // Ensure tiles are squares by using the smaller dimension
-  const tileSize = Math.min(tileWidth, tileHeight);
-
-  return { cols, rows, tileSize };
-}
-
-/**
  * Tiles selection of nodes into a grid layout covering the entire SVG.
  */
 export function tileNodes(
   svg,
   palestinianDemolitions,
   MARGIN,
+  ADJ_WIDTH,
   ADJ_HEIGHT,
   nodes,
   RECT,
-  RECT_ADJUSTMENT_FACTOR
+  RECT_ADJUSTMENT_FACTOR,
+  tileSimulation
 ) {
   // Show hidden nodes (for tiling)
   nodes.filter((d) => !d.showOnMap).style("display", "block");
 
-  // Number of nodes to display in the grid.
+  // Number of nodes to animate as falling tiles.
   const N = 9;
   // Filter nodes designated as tile nodes.
   const selectedNodes = palestinianDemolitions.filter((d) => d.tileNode);
 
-  // Calculate grid layout (columns, rows, and tile size using the adjusted height)
-  const { cols, rows, tileSize } = calculateGridLayout(
-    N,
-    ADJ_HEIGHT,
-    ADJ_HEIGHT
-  );
+  // Optionally: remove any existing transitions or popups
+  // (if you want a clean slate before starting the simulation)
 
-  // Assign each selected node a target grid position and dimensions.
-  selectedNodes.forEach((d, i) => {
-    const row = Math.floor(i / cols);
-    const col = i % cols;
-    d.tileTargetX = col * tileSize;
-    d.tileTargetY = row * tileSize;
-    d.targetWidth = tileSize;
-    d.targetHeight = tileSize;
+  // Instead of calculating a fixed grid layout, we set each tile's initial position.
+  // For example, assign a random x position within the width of the overlay,
+  // and start with a y-position above the visible area.
+  selectedNodes.forEach((d) => {
+    d.x = Math.random() * ADJ_HEIGHT; // you can adjust this for your desired x-range
+    d.y = -50; // start above the view so they "fall" into the map overlay
+    // You can still set dimensions, so they become like uniform squares.
+    d.targetWidth = (ADJ_HEIGHT / N) * 2.5; // adjust tile size as needed
+    d.targetHeight = d.targetWidth;
   });
 
-  // Create <defs> for SVG patterns using your demolition images.
+  // Create patterns in <defs> as before for your demolition images.
   const defs = svg.append("defs");
+
   const uniqueLocalities = Array.from(
     new Set(selectedNodes.map((d) => d.locality))
   );
@@ -125,10 +94,10 @@ export function tileNodes(
       .attr("height", 1);
   });
 
-  // Select the nodes that will be tiled.
+  // Select the nodes that will become tiles.
   const tiles = nodes.filter((d) => selectedNodes.includes(d));
 
-  // Hide the rest of the nodes.
+  // Hide non-tile nodes.
   nodes
     .filter((d) => !d.tileNode)
     .attr("opacity", 0)
@@ -136,22 +105,87 @@ export function tileNodes(
     .on("mousemove.tooltip", null)
     .on("mouseout.tooltip", null);
 
-  // Transition the tiles to their grid positions and apply pattern fill.
+  // Set initial attributes for the tiles based on the simulation's properties.
   tiles
-    .transition()
-    .duration(1000)
-    .attr("opacity", RECT.TILE_OPACITY)
-    .style("fill", (d) => `url(#tile-image-${cleanLocality(d.locality)})`)
-    .attr("x", (d) => d.tileTargetX)
-    .attr("y", (d) => d.tileTargetY)
+    .attr("x", (d) => d.x)
+    .attr("y", (d) => d.y)
     .attr("width", (d) => d.targetWidth)
     .attr("height", (d) => d.targetHeight)
-    .on("end", function (event, d) {
-      d3.select(this).classed("tiled", true);
+    .style("fill", (d) => `url(#tile-image-${cleanLocality(d.locality)})`)
+    .attr("opacity", RECT.TILE_OPACITY)
+    .style("stroke-width", (d) => d.targetWidth * 0.02);
+
+  tiles.classed("tile-node", true);
+
+  // --- Create a Force Simulation for Free Falling and Collisions ---
+  tileSimulation = d3
+    .forceSimulation(selectedNodes)
+    // Gravity: gently attract nodes to the bottom.
+    .force("gravity", d3.forceY((d) => ADJ_HEIGHT * (3 / 4)).strength(0.05))
+    // Optionally, a centering force in x if you want them to gravitate toward the center.
+    .force("centerX", d3.forceX(ADJ_HEIGHT / 2).strength(0.1))
+    // Collision: prevent tiles from overlapping.
+    .force(
+      "collide",
+      d3
+        .forceCollide()
+        .radius((d) => d.targetWidth / 2 + d.targetWidth * 0.05)
+        .iterations(4)
+    )
+    .force("floor", floorForce)
+    // Run the simulation gradually.
+    .alphaDecay(0.005)
+    .on("tick", ticked);
+
+  // Function to update tile positions on every simulation tick.
+  function ticked() {
+    tiles.attr("x", (d) => d.x).attr("y", (d) => d.y);
+  }
+
+  // --- Add Drag Behavior ---
+  tiles.call(
+    d3.drag().on("start", dragstarted).on("drag", dragged).on("end", dragended)
+  );
+
+  function dragstarted(event, d) {
+    // Increase simulation's energy on drag start so other nodes react.
+    if (!event.active) tileSimulation.alphaTarget(0.3).restart();
+    d.fx = d.x;
+    d.fy = d.y;
+  }
+
+  function dragged(event, d) {
+    d.fx = event.x;
+    d.fy = event.y;
+  }
+
+  function dragended(event, d) {
+    if (!event.active) tileSimulation.alphaTarget(0);
+    // Remove fixed positions to allow the simulation to resume its forces.
+    d.fx = null;
+    d.fy = null;
+  }
+
+  function floorForce(alpha) {
+    const epsilon = 0.5; // threshold to avoid jitter
+    tileSimulation.nodes().forEach((d) => {
+      const bottomLimit = ADJ_HEIGHT - d.targetHeight;
+      // if node's center is significantly below the bottom limit, clamp it
+      if (d.y > bottomLimit + epsilon) {
+        d.y = bottomLimit;
+        d.vy = 0;
+      } else if (Math.abs(d.y - bottomLimit) < epsilon) {
+        // if the node is within the epsilon zone, force it to precisely the floor
+        d.y = bottomLimit;
+        d.vy = 0;
+      }
     });
+  }
 
   // Inside tileNodes() add a click handler for the tiles.
   tiles.on("click", function (event, d) {
+    // stop propagation so the global click rule doesn't immediately close the popup.
+    event.stopPropagation();
     // Select the parent so the pop-up shares the same coordinate system.
     const parent = d3.select(this.parentNode);
     // Remove any existing pop-up to avoid duplicates.
@@ -163,18 +197,20 @@ export function tileNodes(
     const popupWidth = tileSize * popupScale;
     const popupHeight = tileSize * popupScale;
 
-    // Calculate the grid center.
-    const {
-      cols,
-      rows,
-      tileSize: gridTileSize,
-    } = calculateGridLayout(N, ADJ_HEIGHT, ADJ_HEIGHT);
-    const gridWidth = cols * gridTileSize;
-    const gridHeight = rows * gridTileSize;
-    const centerX = gridWidth / 2;
-    const centerY = gridHeight / 2;
+    // Determine the SVG parent's width and height.
+    // First try to get them as attributes; if not defined, fallback to the bounding box.
+    let parentWidth = parseFloat(parent.attr("width"));
+    let parentHeight = parseFloat(parent.attr("height"));
+    if (isNaN(parentWidth) || isNaN(parentHeight)) {
+      const bbox = parent.node().getBBox();
+      parentWidth = bbox.width;
+      parentHeight = bbox.height;
+    }
+    // Calculate the center coordinates of the SVG parent.
+    const centerX = parentWidth / 2;
+    const centerY = parentHeight / 2;
 
-    // Add a pop-up group and center it over the grid.
+    // Append a pop-up group and center it within the parent's container.
     const popup = parent
       .append("g")
       .attr("class", "popup")
@@ -217,18 +253,16 @@ export function tileNodes(
     const captionWidth = popupWidth - captionX - contentPadding;
     const captionHeight = topRegionHeight - 2 * contentPadding;
     const captionText = `
-      ${d.locality_cleaned}
-      ${d.district}<br/>
-      Demolition: ${formatDate(d.date_of_demolition)}
-      ${d.housing_units} ${
-      d.housing_units > 1 ? "homes" : "home"
-    } demolished, ${d.people_left_homeless} ${
+    ${d.locality_cleaned} ${d.district}<br/>
+    Demolition: ${formatDate(d.date_of_demolition)}<br/>
+    ${d.housing_units} ${d.housing_units > 1 ? "homes" : "home"} demolished, 
+    ${d.people_left_homeless} ${
       d.people_left_homeless > 1 ? "people" : "person"
     } left homeless<br/>
     Photo: ${demolitionImages[d.locality][1]}, ${
       demolitionImages[d.locality][2]
     }
-    `;
+  `;
 
     popup
       .append("foreignObject")
@@ -241,12 +275,12 @@ export function tileNodes(
       .html(captionText);
 
     // Add a close ("×") button to the top right of the popup.
-    const closeButtonPadding = 10; // adjust padding as needed
+    const closeButtonPadding = 10;
     popup
       .append("text")
       .attr("class", "popup-close")
-      .attr("x", popupWidth - closeButtonPadding) // position near the top right
-      .attr("y", closeButtonPadding + 10) // adjust for text baseline
+      .attr("x", popupWidth - closeButtonPadding)
+      .attr("y", closeButtonPadding + 10)
       .text("×")
       .style("cursor", "pointer")
       .on("click", function () {
@@ -254,15 +288,15 @@ export function tileNodes(
         popup.remove();
       });
 
-    // Add horizontal divider line between the image/caption and the filler content
+    // Add a horizontal divider line between the image/caption and the filler content.
     popup
       .append("line")
-      .attr("x1", contentPadding * 4) // start a little right of the popup's left edge
-      .attr("y1", topRegionHeight) // at the bottom of the top region
-      .attr("x2", popupWidth - contentPadding * 4) // end a little before the popup's right edge
+      .attr("x1", contentPadding * 4)
+      .attr("y1", topRegionHeight)
+      .attr("x2", popupWidth - contentPadding * 4)
       .attr("y2", topRegionHeight)
-      .style("stroke", "var(--palestinian)") // uses the Palestinian color from style.css
-      .style("stroke-width", 1); // adjust thickness as desired
+      .style("stroke", "var(--palestinian)")
+      .style("stroke-width", 1);
 
     // Add scrollable filler text in the bottom region using a foreignObject.
     popup
@@ -276,7 +310,8 @@ export function tileNodes(
       .html(`${demolitionImages[d.locality][3]}`);
   });
 
-  return nodes;
+  // Return the updated nodes if needed.
+  return { nodes, tileSimulation };
 }
 
 export function closeAllPopups() {
@@ -291,7 +326,12 @@ export function closeAllPopups() {
  * @param {d3.selection} nodes - The D3 selection of node elements.
  * @param {Object} RECT - The RECT object containing standard dimensions and opacities.
  */
-export function resetTileStyling(nodes, RECT) {
+export function resetTileStyling(nodes, RECT, tileSimulation) {
+  // Stop the simulation if it's running.
+  if (tileSimulation) {
+    tileSimulation.stop();
+    tileSimulation = null;
+  }
   nodes
     .filter((d) => d.tileNode)
     .interrupt("resetTile")
@@ -314,3 +354,14 @@ export function resetTileStyling(nodes, RECT) {
       d3.select(this).classed("tiled", false);
     });
 }
+
+// --- global Click Listener ---
+// This listener checks for clicks anywhere in the document.
+// If the click target isn't a tile node (i.e. doesn't have the "tile-node" class in its ancestry),
+// it will close any open pop-ups.
+d3.select(document).on("click.closePopup", function (event) {
+  // 'event.target.closest' returns the closest ancestor with class "tile-node" (or null if none)
+  if (!event.target.closest(".tile-node")) {
+    closeAllPopups();
+  }
+});

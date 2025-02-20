@@ -18,6 +18,7 @@ let nodesOverlay;
 let animationController, animatedQueue;
 let animatedLines = [];
 let israeliLine;
+let tileSimulation;
 
 let lastIndex = 0;
 let activeIndex = 0;
@@ -436,19 +437,21 @@ let activationFunctions = [
       BAR_MARGIN
     );
     closeAllPopups();
-    resetTileStyling(nodes, RECT);
+    resetTileStyling(nodes, RECT, tileSimulation);
   },
   () => {
     hideBarChartAxesAndLabels();
     svg = boxSVG(svg, MARGIN, ADJ_WIDTH, ADJ_HEIGHT);
-    nodes = tileNodes(
+    ({ nodes, tileSimulation } = tileNodes(
       svg,
       palestinianDemolitions,
       MARGIN,
+      ADJ_WIDTH,
       ADJ_HEIGHT,
       nodes,
-      RECT
-    );
+      RECT,
+      tileSimulation
+    ));
   },
 ];
 
