@@ -1,6 +1,7 @@
 import { getRandomNumberBetween } from "./helper_functions.js";
 import { tileNodes } from "./tiles.js";
-import { duBoisLine, consolidatePalestinianLines } from "./lines.js";
+import { duBoisLine } from "./lines.js";
+import { nodeStackPositioning } from "./node_stack.js";
 
 export function debounce(func, wait) {
   let timeout;
@@ -274,7 +275,7 @@ export function redrawGraphics({
   }
 
   // [2] Update node dimensions and re-center them
-  if (nodes && !nodes.empty() && [3, 4, 6].includes(activeIndex)) {
+  if (nodes && !nodes.empty() && [3, 4].includes(activeIndex)) {
     nodes
       .attr(
         "x",
@@ -290,20 +291,16 @@ export function redrawGraphics({
             2
       );
 
-    if (activeIndex != 6) {
-      nodes
-        .filter((d) => !d.tileNode)
-        .attr(
-          "width",
-          (d) =>
-            Math.sqrt(d.housing_units) * RECT.WIDTH * RECT_ADJUSTMENT_FACTOR
-        )
-        .attr(
-          "height",
-          (d) =>
-            Math.sqrt(d.housing_units) * RECT.HEIGHT * RECT_ADJUSTMENT_FACTOR
-        );
-    }
+    nodes
+      .filter((d) => !d.tileNode)
+      .attr(
+        "width",
+        (d) => Math.sqrt(d.housing_units) * RECT.WIDTH * RECT_ADJUSTMENT_FACTOR
+      )
+      .attr(
+        "height",
+        (d) => Math.sqrt(d.housing_units) * RECT.HEIGHT * RECT_ADJUSTMENT_FACTOR
+      );
   }
 
   // [3] Update the simulation forces and restart the simulation
@@ -350,7 +347,6 @@ export function redrawGraphics({
       ADJ_HEIGHT,
       nodes,
       RECT,
-      RECT_ADJUSTMENT_FACTOR,
       tileSimulation
     );
   }
@@ -376,9 +372,20 @@ export function redrawGraphics({
     );
     // Sort years in ascending order
     aggregatedData.sort((a, b) => d3.ascending(a[0], b[0]));
+    const aggregatedMap = new Map(aggregatedData);
 
     const chartHeight = ADJ_HEIGHT - BAR_MARGIN.TOP - BAR_MARGIN.BOTTOM;
     const chartWidth = ADJ_WIDTH - BAR_MARGIN.LEFT - BAR_MARGIN.RIGHT;
+
+    nodeStackPositioning(
+      nodes,
+      aggregatedData,
+      aggregatedMap,
+      chartWidth,
+      chartHeight,
+      BAR_MARGIN,
+      RECT
+    );
 
     svg
       .select(".bar-chart")
@@ -397,6 +404,11 @@ export function redrawGraphics({
         )
       );
 
+    svg
+      .select(".x-label")
+      .attr("x", chartWidth / 2)
+      .attr("y", chartHeight + BAR_MARGIN.BOTTOM);
+
     svg.select(".y-axis").call(
       d3.axisLeft(
         d3
@@ -406,5 +418,10 @@ export function redrawGraphics({
           .range([chartHeight, 0])
       )
     );
+
+    svg
+      .select(".y-label")
+      .attr("x", -chartHeight / 2)
+      .attr("y", -BAR_MARGIN.LEFT + 30);
   }
 }

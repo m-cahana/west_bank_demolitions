@@ -16,7 +16,6 @@ export function tileNodes(
   ADJ_HEIGHT,
   nodes,
   RECT,
-  RECT_ADJUSTMENT_FACTOR,
   tileSimulation
 ) {
   // Show hidden nodes (for tiling)

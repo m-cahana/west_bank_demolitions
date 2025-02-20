@@ -442,7 +442,6 @@ let activationFunctions = [
       ADJ_HEIGHT,
       nodes,
       RECT,
-      RECT_ADJUSTMENT_FACTOR,
       tileSimulation
     ));
   },

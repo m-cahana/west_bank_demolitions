@@ -609,6 +609,11 @@ strong {
     font-size: 14px;
   }
 
+  .x-axis .tick text,
+  .y-axis .tick text {
+    font-size: 10px;
+  }
+
   /* Caption text styling */
   .popup-caption {
     font-size: 10px;
@@ -628,5 +633,10 @@ strong {
   .x-label,
   .y-label {
     font-size: 12px;
+  }
+
+  .x-axis .tick text,
+  .y-axis .tick text {
+    font-size: 8px;
   }
 }

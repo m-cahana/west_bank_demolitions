@@ -97,6 +97,26 @@ export function stackNodes(
       .style("opacity", 1);
   }
 
+  nodeStackPositioning(
+    nodes,
+    aggregatedData,
+    aggregatedMap,
+    chartWidth,
+    chartHeight,
+    BAR_MARGIN,
+    RECT
+  );
+}
+
+export function nodeStackPositioning(
+  nodes,
+  aggregatedData,
+  aggregatedMap,
+  chartWidth,
+  chartHeight,
+  BAR_MARGIN,
+  RECT
+) {
   // --- Stack the Nodes by Year without reparenting ---
   // Get actual DOM nodes from the D3 selection.
   const nodeElements = nodes.nodes();
