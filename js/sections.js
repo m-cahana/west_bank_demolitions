@@ -101,13 +101,7 @@ import {
   hideMap,
   renderHiddenMapNodes,
 } from "./map.js";
-import {
-  rectSVG,
-  boxSVG,
-  tileNodes,
-  closeAllPopups,
-  resetTileStyling,
-} from "./tiles.js";
+import { tileNodes, closeAllPopups, resetTileStyling } from "./tiles.js";
 import { createPausableQueue } from "./helper_functions.js";
 import {
   updateDimensions,
@@ -170,6 +164,7 @@ function redrawAll() {
     palestinianPermits,
     CORE_Y_START,
     MARGIN,
+    tileSimulation,
   });
 }
 
@@ -416,7 +411,6 @@ let activationFunctions = [
       RECT_ADJUSTMENT_FACTOR
     ));
     nodes = attachTooltip(nodes, tooltip, true);
-    svg = rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN);
     hideBarChartAxesAndLabels();
     redrawAll();
   },
@@ -426,7 +420,6 @@ let activationFunctions = [
     mapGenerate = false;
     hideMap();
     renderHiddenMapNodes(nodes);
-    svg = rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN);
     stackNodes(
       palestinianDemolitions,
       mapSvg,
@@ -441,7 +434,6 @@ let activationFunctions = [
   },
   () => {
     hideBarChartAxesAndLabels();
-    svg = boxSVG(svg, MARGIN, ADJ_WIDTH, ADJ_HEIGHT);
     ({ nodes, tileSimulation } = tileNodes(
       svg,
       palestinianDemolitions,
@@ -450,6 +442,7 @@ let activationFunctions = [
       ADJ_HEIGHT,
       nodes,
       RECT,
+      RECT_ADJUSTMENT_FACTOR,
       tileSimulation
     ));
   },

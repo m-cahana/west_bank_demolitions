@@ -5,36 +5,6 @@
 import { demolitionImages } from "./demolition_imagery.js";
 import { cleanLocality, formatDate } from "./helper_functions.js";
 
-export function rectSVG(svg, ADJ_WIDTH, ADJ_HEIGHT, MARGIN) {
-  svg
-    .attr("width", ADJ_WIDTH + MARGIN.LEFT + MARGIN.RIGHT)
-    .attr("height", ADJ_HEIGHT + MARGIN.TOP + MARGIN.BOTTOM)
-    .transition()
-    .duration(0) // Adjust duration as needed
-    .attr("transform", `translate(0,0)`);
-
-  return svg;
-}
-
-export function boxSVG(svg, MARGIN, ADJ_WIDTH, ADJ_HEIGHT) {
-  const newWidth = Math.min(ADJ_HEIGHT, ADJ_WIDTH) + MARGIN.LEFT + MARGIN.RIGHT;
-  const newHeight =
-    Math.min(ADJ_HEIGHT, ADJ_WIDTH) + MARGIN.TOP + MARGIN.BOTTOM;
-
-  // Calculate the difference between old and new sizes
-  const deltaX = (ADJ_WIDTH + MARGIN.LEFT + MARGIN.RIGHT - newWidth) / 2;
-  const deltaY = (ADJ_HEIGHT + MARGIN.TOP + MARGIN.BOTTOM - newHeight) / 2;
-
-  svg
-    .attr("width", newWidth)
-    .attr("height", newHeight)
-    .transition()
-    .duration(1000) // Adjust duration as needed
-    .attr("transform", `translate(${deltaX}, ${deltaY})`);
-
-  return svg;
-}
-
 /**
  * Tiles selection of nodes into a grid layout covering the entire SVG.
  */
@@ -123,7 +93,20 @@ export function tileNodes(
     // Gravity: gently attract nodes to the bottom.
     .force("gravity", d3.forceY((d) => ADJ_HEIGHT * (3 / 4)).strength(0.05))
     // Optionally, a centering force in x if you want them to gravitate toward the center.
-    .force("centerX", d3.forceX(ADJ_HEIGHT / 2).strength(0.1))
+    .force(
+      "centerX",
+      d3
+        .forceX(() => {
+          const mapFO = document.querySelector(".map-foreignobject");
+          console.log(mapFO.getBoundingClientRect().width);
+          // Fallback to ADJ_WIDTH if the foreignObject isn't found
+          const mapWidth = mapFO
+            ? mapFO.getBoundingClientRect().width - MARGIN.LEFT
+            : ADJ_WIDTH - MARGIN.LEFT;
+          return mapWidth / 2;
+        })
+        .strength(0.1)
+    )
     // Collision: prevent tiles from overlapping.
     .force(
       "collide",

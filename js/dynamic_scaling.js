@@ -185,6 +185,7 @@ export function redrawGraphics({
   palestinianPermits,
   CORE_Y_START,
   MARGIN,
+  tileSimulation,
 }) {
   if (activeIndex == 0) {
     animatedLines.forEach((instance) => {
@@ -340,14 +341,17 @@ export function redrawGraphics({
   // Make sure to pass your data array for Palestinian demolitions.
   if (palestinianDemolitions && nodes && activeIndex == 7) {
     simulation.stop();
+    tileSimulation.stop();
     tileNodes(
       svg,
       palestinianDemolitions,
       MARGIN,
+      ADJ_WIDTH,
       ADJ_HEIGHT,
       nodes,
       RECT,
-      RECT_ADJUSTMENT_FACTOR
+      RECT_ADJUSTMENT_FACTOR,
+      tileSimulation
     );
   }
 
