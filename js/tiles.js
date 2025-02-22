@@ -235,7 +235,7 @@ export function tileNodes(
     const captionWidth = popupWidth - captionX - contentPadding;
     const captionHeight = topRegionHeight - 2 * contentPadding;
     const captionText = `
-    - ${d.locality_cleaned} ${d.district}
+    - ${d.locality_cleaned}, ${d.district}
     - Demolition: ${formatDate(d.date_of_demolition)}
     - ${d.housing_units} ${d.housing_units > 1 ? "homes" : "home"} demolished, 
     ${d.people_left_homeless} ${
