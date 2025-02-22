@@ -235,13 +235,13 @@ export function tileNodes(
     const captionWidth = popupWidth - captionX - contentPadding;
     const captionHeight = topRegionHeight - 2 * contentPadding;
     const captionText = `
-    ${d.locality_cleaned} ${d.district}<br/>
-    Demolition: ${formatDate(d.date_of_demolition)}<br/>
-    ${d.housing_units} ${d.housing_units > 1 ? "homes" : "home"} demolished, 
+    - ${d.locality_cleaned} ${d.district}
+    - Demolition: ${formatDate(d.date_of_demolition)}
+    - ${d.housing_units} ${d.housing_units > 1 ? "homes" : "home"} demolished, 
     ${d.people_left_homeless} ${
       d.people_left_homeless > 1 ? "people" : "person"
-    } left homeless<br/>
-    Photo: ${demolitionImages[d.locality][1]}, ${
+    } left homeless
+    - Photo: ${demolitionImages[d.locality][1]}, ${
       demolitionImages[d.locality][2]
     }
   `;

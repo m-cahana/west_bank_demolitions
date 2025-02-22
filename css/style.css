@@ -548,6 +548,11 @@ strong {
     justify-content: center;
     align-items: center;
   }
+
+  .popup-caption {
+    font-size: 12px;
+    line-height: 1;
+  }
 }
 
 /* even smaller screens */
@@ -587,7 +592,7 @@ strong {
   }
 
   .popup-caption {
-    font-size: 12px;
+    font-size: 10px;
     line-height: 1;
   }
 
@@ -638,5 +643,17 @@ strong {
   .x-axis .tick text,
   .y-axis .tick text {
     font-size: 8px;
+  }
+
+  /* Caption text styling */
+  .popup-caption {
+    font-size: 8px;
+  }
+}
+
+/* even smaller  */
+@media screen and (max-width: 400px) {
+  .popup-caption {
+    font-size: 6px;
   }
 }
