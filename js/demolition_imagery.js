@@ -32,7 +32,15 @@ export const demolitionImages = {
     "al_walajah_demolition.jpeg",
     "Alberto Pizzoli, Agence-France Press",
     "January 16th, 2024",
-    "",
+    `Al-Walajah is one of many Palestinian communities in and around Jerusalem whose fate is uncertain. Since 1967, when Israel annexed East Jerusalem and occupied the West Bank, Israeli authorities never made a zoning plan Al-Walajah. Therefore, it's impossible for residents there to build legally. 
+    <br></br>
+    Luai al-Atrash, a divorced mother-of-two, saved and borrowed money to build her family a home in the town. Her son even dropped out of college to save on expenses. But she lacked the necessary permits. The military demolished her home in February 2023, and dozens of other homes in the neighborhood are slated for <a
+            href="#footnotes"
+            aria-describedby="footnote-label"
+            id="footnotes-ref-12"
+            >demolition.
+          </a> 
+    `,
   ],
   "Khan al-Ahmar (Bedouin Community)": [
     "khan_al_ahmar_demolition.jpeg",
@@ -60,7 +68,7 @@ export const demolitionImages = {
             aria-describedby="footnote-label"
             id="footnotes-ref-9"
             >school.
-          </a> Jahalin says that building anything new in the village has become impossible too. “We are being watched all the time by drones that film everything we do, and we are not allowed to bring in any building materials or equipment. If one of us sets up a new tent it will be demolished the next <a
+          </a> Jahalin says that building anything new in the village has become impossible too: “We are being watched all the time by drones that film everything we do, and we are not allowed to bring in any building materials or equipment. If one of us sets up a new tent it will be demolished the next <a
             href="#footnotes"
             aria-describedby="footnote-label"
             id="footnotes-ref-10"
@@ -97,6 +105,14 @@ export const demolitionImages = {
     "ein_samia_demolition.jpeg",
     "Basel Adra, 972 Magazine",
     "May 23, 2023",
-    "",
+    `'Ein Samia used to be a Palestinian village of around 200 residents, a little northeast of Ramallah. As of 2023, it no longer exists. For years, the Israeli military demolished homes in the village, and banned any infrastructure development. Villagers weren't allowed to connect to water or sewage systems. This pressure from the military, combined with increasingly violent attacks from settlers, made life unbearable. Mohammed Haseen, a representative of the village's residents, described the dynamic this way: “The State of Israel completely denies our existence. They destroy our homes, deny us electricity, and even tell us that they will demolish our elementary school. On the mountain across from the village, we can see the large houses made of concrete that belong to the settlers. We can see them from our tents and our houses made of tin. We can see that they get electricity and water and whatever they want from the <a
+            href="#footnotes"
+            aria-describedby="footnote-label"
+            id="footnotes-ref-11"
+            >state."
+          </a>
+    <br></br>
+
+    Residents of the community were forced to flee in May of 2023. Some families simply packed their things into tractors and left without a destination, not knowing where to go. `,
   ],
 };
