@@ -342,8 +342,8 @@ export function resetTileStyling(nodes, RECT, tileSimulation) {
 // If the click target isn't a tile node (i.e. doesn't have the "tile-node" class in its ancestry),
 // it will close any open pop-ups.
 d3.select(document).on("click.closePopup", function (event) {
-  // 'event.target.closest' returns the closest ancestor with class "tile-node" (or null if none)
-  if (!event.target.closest(".tile-node")) {
+  // Don't close the popup if a tile node or a popup element was clicked
+  if (!event.target.closest(".tile-node") && !event.target.closest(".popup")) {
     closeAllPopups();
   }
 });

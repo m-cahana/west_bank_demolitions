@@ -351,6 +351,35 @@ strong {
   white-space: normal;
 }
 
+.footnote-list {
+  font-size: 0.8em; /* Adjust the size according to your needs */
+}
+
+.popup {
+  counter-reset: footnote;
+}
+
+.popup [aria-describedby="footnote-label"]::after {
+  counter-increment: footnote;
+  content: counter(footnote);
+  vertical-align: super;
+  font-size: 0.75em;
+}
+/* Scope the footnotes counter for pop-up footnotes */
+.popup-footnotes-container {
+  counter-reset: popupFootnote;
+}
+
+/* Style footnotes only for elements within the pop-up container */
+.popup-footnotes-container [aria-describedby="footnote-label"]::after {
+  counter-increment: popupFootnote;
+  content: counter(popupFootnote);
+  vertical-align: super;
+  font-size: 0.75em;
+  margin-left: 1px;
+  color: var(--palestinian);
+}
+
 .label-rect {
   fill: white;
   stroke: black;

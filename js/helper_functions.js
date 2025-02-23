@@ -1,5 +1,5 @@
 // *******************
-// general helper function
+// general helper functions
 // *******************
 
 /**
