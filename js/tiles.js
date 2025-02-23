@@ -22,7 +22,7 @@ export function tileNodes(
   nodes.filter((d) => !d.showOnMap).style("display", "block");
 
   // Number of nodes to animate as falling tiles.
-  const N = 9;
+  const N = 8;
   // Filter nodes designated as tile nodes.
   const selectedNodes = palestinianDemolitions.filter((d) => d.tileNode);
 

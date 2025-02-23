@@ -60,7 +60,6 @@ const tileLocalities = (d) =>
   (d.locality === "Khan al-Ahmar (Bedouin Community)" &&
     d.people_left_homeless === 16) ||
   (d.locality === "Kh. Jenbah" && d.people_left_homeless === 13) ||
-  (d.locality === "Kh. Ma'in" && d.people_left_homeless === 7) ||
   (d.locality === "Kh. Humsah" &&
     d.people_left_homeless === 11 &&
     d.minors_left_homeless === 6 &&
