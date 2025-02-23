@@ -149,7 +149,7 @@ export const demolitionImages = {
     </ol>
     `,
   ],
-  "Kh. al-Markez": [
+  "a-Tuwani": [
     "masafer_yatta_demolition.jpeg",
     "Keren Manor, Activestills",
     "January 8th, 2021",

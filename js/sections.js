@@ -53,7 +53,7 @@ let STEP_CONFIG = {
 const PERMIT_TEXT = { width_padding: 10, height_padding: 10 };
 
 const tileLocalities = (d) =>
-  (d.locality === "Kh. al-Markez" && d.people_left_homeless == 12) ||
+  (d.locality === "a-Tuwani" && d.people_left_homeless == 7) ||
   (d.locality === "a-Rakeez" && d.people_left_homeless === 12) ||
   (d.locality === "al-Walajah" && d.people_left_homeless === 14) ||
   (d.locality === "Um al-Kheir" && d.people_left_homeless === 15) ||
