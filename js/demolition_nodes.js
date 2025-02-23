@@ -98,7 +98,7 @@ export function initiateDemolitionNodes(
           walkX(
             getRandomNumberBetween(
               (CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8,
-              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
+              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 6.5
             )
           )
         )
@@ -111,7 +111,7 @@ export function initiateDemolitionNodes(
           walkY(
             getRandomNumberBetween(
               (CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8,
-              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 7
+              ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 8) * 6.5
             )
           )
         )
