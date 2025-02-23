@@ -106,13 +106,48 @@ export const demolitionImages = {
     "jinbeh_demolition.jpeg",
     "Keren Manor, Activestills",
     "February 3rd, 2020",
-    "",
+    `Khirbet Jenbah is one of eight villages facing demolition in Massafer Yatta, a hamlet at the sourthern tip of the West Bank. It's been lived in for generations. Since the 1980s, the Israeli military declared the village's land to be a firing zone for military training. No such declarations were made for Jewish settlements in the same area, and Israel's former prime minister, Ariel Sharon, said on the record that this decision was made to evict Arab villagers and keep the land in Israeli <a id="popup-footnote-ref-1" href="#popup-footnote-1" aria-describedby="footnote-label">hands.</a>
+    <br></br>
+    The army now conducts training drills near and inside the village. Family homes are repeatedly demolished, and soldiers also seal the village's wells, cut its water lines, and destroy its <a id="popup-footnote-ref-2" href="#popup-footnote-2" aria-describedby="footnote-label">roads.</a>
+
+    <br></br>
+    <em>Footnotes</em>
+    <ol class="footnote-list">
+      <li id="popup-footnote-1">
+        Ofer Aderet, "40-year-old Document Reveals Ariel Sharon's Plan to Evict 1,000 Palestinians From Their Homes", <em>Ha'aretz</em>, August 9, 2020. 
+                <a class="footnote-url" href="https://www.haaretz.com/israel-news/2020-08-09/ty-article/.premium/40-year-old-document-reveals-ariel-sharons-plan-to-expel-1-000-palestinians/0000017f-e4f9-d804-ad7f-f5fba0ee0000">
+                  https://www.haaretz.com/israel-news/2020-08-09/ty-article/.premium/40-year-old-document-reveals-ariel-sharons-plan-to-expel-1-000-palestinians/0000017f-e4f9-d804-ad7f-f5fba0ee0000
+                </a>
+                <a href="#popup-footnote-ref-1" aria-label="Back to content">↩</a>
+      </li>
+       <li id="popup-footnote-2">
+        Basel Adra, "Israel’s top court will decide whether to expel 1,300 of my neighbors", <em>+972 Magazine</em>, March 14, 2022. 
+                <a class="footnote-url" href="https://www.972mag.com/israel-court-masafer-yatta-expulsions/">
+                  https://www.972mag.com/israel-court-masafer-yatta-expulsions/
+                </a>
+                <a href="#popup-footnote-ref-2" aria-label="Back to content">↩</a>
+      </li>
+    </ol>
+    `,
   ],
   "a-Rakeez": [
     "a_rakeez_demolition.jpeg",
     "Keren Manor, Activestills",
     "January 8th, 2021",
-    "",
+    `a-Rakeez is another village within Massafer Yatta, a Palestinian hamlet in the South Hebron Hills. The military has deemed it a firing zone for training purposes, and  construction within it is prohibited. Along with demolishing homes, the military's also demolished the village's elementary school back in 2022. Soldiers surrounded the school and threw stun grenades at villagers who tried to block the path of the military's bulldozers. Children were stuck inside and had to escape through the windows. Representatives from the Civil Administration confiscated the school's tables, chairs, and boards. Bulldozers then crushed the school to rubble. Construction of a new school is <a id="popup-footnote-ref-1" href="#popup-footnote-1" aria-describedby="footnote-label">forbidden.</a>
+    
+    <br></br>
+    <em>Footnotes</em>
+    <ol class="footnote-list">
+      <li id="popup-footnote-1">
+        Basel Adra and Yuval Abraham, "The Destruction of This Palestinian Community Was Green-Lighted by Israel’s Supreme Court", <em>The Nation</em>, July 24, 2023. 
+                <a class="footnote-url" href="https://www.thenation.com/article/world/masafer-yatta-destruction-palestine-israel/">
+                  https://www.thenation.com/article/world/masafer-yatta-destruction-palestine-israel/
+                </a>
+                <a href="#popup-footnote-ref-1" aria-label="Back to content">↩</a>
+      </li>
+    </ol>
+    `,
   ],
   "Kh. al-Markez": [
     "masafer_yatta_demolition.jpeg",
