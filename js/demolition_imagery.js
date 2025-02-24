@@ -153,7 +153,38 @@ export const demolitionImages = {
     "masafer_yatta_demolition.jpeg",
     "Keren Manor, Activestills",
     "January 8th, 2021",
-    "",
+    `Al-Tuwani is home to Basel Adra, pictured above at the very left. The village is part of the Massafer Yatta hamlet in the South Hebron Hills, which the Israeli military has declared a firing zone for training purposes. 
+    <br></br>
+    Adra has spent years documenting Massafer Yatta's destruction, filming as the military enters every week to destroy homes, and as settlers from nearby outposts organize <a id="popup-footnote-ref-1" href="#popup-footnote-1" aria-describedby="footnote-label">pogroms.</a> Much of this project is informed by his work. 
+    <br></br>
+    Along with his journalism, Adra helps organize weekly protests in Massafer Yatta against home demolition. The Israeli military, in turn, has often arrested and harrassed activists like Adra to thwart their work, telling them explicitly not to film army raids and scenes of <a id="popup-footnote-ref-2" href="#popup-footnote-2" aria-describedby="footnote-label">destruction.</a> Adra was detained, cuffed, and blindfolded in 2023 for reporting on a settler <a id="popup-footnote-ref-3" href="#popup-footnote-3" aria-describedby="footnote-label">attack.</a> His film <a href = 'https://www.youtube.com/watch?v=7AS6v3hC86Q&t=62s'>No Other Land</a> documents the gradual destruction of his community, and the routine violence he and his family face for continuing to live on their land. 
+
+     <br></br>
+    <em>Footnotes</em>
+    <ol class="footnote-list">
+      <li id="popup-footnote-1">
+        Basel Adra, "I filmed a settler pogrom. Now the Israeli media is smearing me", <em>+972 Magazine</em>, October 6, 2021. 
+                <a class="footnote-url" href="https://www.972mag.com/basil-al-adraa-settlers-media/">
+                  https://www.972mag.com/basil-al-adraa-settlers-media/
+                </a>
+                <a href="#popup-footnote-ref-1" aria-label="Back to content">↩</a>
+      </li>
+      <li id="popup-footnote-2">
+        Sami Huraini, "From attack dogs to prison time, this is how Israel is trying to thwart my activism", <em>+972 Magazine</em>, October 24, 2024. 
+                <a class="footnote-url" href="https://www.972mag.com/huraini-tuwani-arrest-army/">
+                  https://www.972mag.com/huraini-tuwani-arrest-army/
+                </a>
+                <a href="#popup-footnote-ref-2" aria-label="Back to content">↩</a>
+      </li>
+      <li id="popup-footnote-3">
+        Basel Adra, "I was handcuffed and blindfolded for reporting on settler violence", <em>+972 Magazine</em>, July 17, 2023. 
+                <a class="footnote-url" href="https://www.972mag.com/basel-adra-detention-settler-attack/">
+                  https://www.972mag.com/basel-adra-detention-settler-attack/
+                </a>
+                <a href="#popup-footnote-ref-3" aria-label="Back to content">↩</a>
+      </li>
+    </ol>
+    `,
   ],
   "Kh. Humsah": [
     "khirbet_humsah_demolition.jpeg",
