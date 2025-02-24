@@ -342,6 +342,17 @@ strong {
 
 [aria-label="Back to content"] {
   font-size: 0.8em;
+  color: var(--palestinian);
+}
+
+a {
+  color: var(--palestinian);
+}
+
+/* Optionally, style links on hover/focus for consistency */
+a:hover,
+a:focus {
+  color: var(--palestinian);
 }
 
 .footnote-url {
