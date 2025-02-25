@@ -119,7 +119,7 @@ export function initiateDemolitionNodes(
     )
     .force(
       "collide",
-      d3.forceCollide().radius(2).strength(0.7) // Adjusted collision radius
+      d3.forceCollide().radius(2).strength(0.01) // Adjusted collision radius
     );
 
   // **9. Restart the simulation**
@@ -182,7 +182,7 @@ export function splitNodesLeftRight(
     RIGHT:
       ((CORE_XY_DOMAIN.END - CORE_XY_DOMAIN.START) / 10) * 10 - BUFFER_RIGHT,
     TOP: 80,
-    BOTTOM: 0,
+    BOTTOM: 10,
   };
 
   palestinianDemolitions = assignTargetPositions(
@@ -216,6 +216,7 @@ export function splitNodesLeftRight(
         .forceY((d) => walkY(getRandomNumberBetween(BOUNDS.BOTTOM, BOUNDS.TOP)))
         .strength(0.2) // Spread vertically
     )
+    .force("collide", d3.forceCollide().radius(2).strength(0.01))
     .alpha(0.75) // Ensure the simulation restarts effectively
     .restart();
 
