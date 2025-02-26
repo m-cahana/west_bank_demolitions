@@ -388,7 +388,9 @@ let activationFunctions = [
     hideMap();
     renderHiddenMapNodes(nodes);
     showGrantedPermits(nodes, RECT);
-    animationController = AnimationController(demolitionDates, nodes, RECT);
+    if (!animationController) {
+      animationController = AnimationController(demolitionDates, nodes, RECT);
+    }
     animationController.pause();
     nodes = attachTooltip(nodes, tooltip, false);
   },
@@ -415,7 +417,6 @@ let activationFunctions = [
   },
   () => {
     animationController.pause();
-    nodes.interrupt();
     mapGenerate = false;
     hideMap();
     renderHiddenMapNodes(nodes);

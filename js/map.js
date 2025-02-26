@@ -22,31 +22,35 @@ export const AnimationController = function (demolitionDates, nodes, RECT) {
     d3.select("#map").select("#date-display").text(`Year: ${formattedYear}`);
   }
 
-  // Function to iterate through all dates
   function iterateDates(demolitionDates) {
     if (currentIndex >= demolitionDates.length) {
-      // Stop the animation when all dates have been processed
       return;
     }
 
     const currentDate = demolitionDates[currentIndex];
-
-    // Add points if any
     fadeBlocks(currentDate, nodes, RECT);
     currentIndex++;
 
     // Schedule the next iteration
-    timeoutId = setTimeout(() => {
-      if (!isPaused) {
-        iterateDates(demolitionDates);
-      }
-    }, animationSpeed / demolitionDates.length);
+    if (!isPaused) {
+      // Add check here to prevent scheduling if already paused
+      timeoutId = setTimeout(() => {
+        if (!isPaused) {
+          iterateDates(demolitionDates);
+        }
+      }, animationSpeed / demolitionDates.length);
+    }
   }
 
   return {
     start: function () {
       isPaused = false;
       currentIndex = 0;
+      if (timeoutId) {
+        // Clear any existing timeout before starting
+        clearTimeout(timeoutId);
+        timeoutId = null;
+      }
       iterateDates(demolitionDates);
     },
     pause: function () {
@@ -55,6 +59,9 @@ export const AnimationController = function (demolitionDates, nodes, RECT) {
         clearTimeout(timeoutId);
         timeoutId = null;
       }
+      // Add this to ensure nodes stop transitioning
+      nodes.interrupt();
+      nodes.transition().duration(0).attr("opacity", RECT.OPACITY);
     },
     resume: function () {
       if (!isPaused) return;
