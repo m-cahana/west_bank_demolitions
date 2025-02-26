@@ -188,77 +188,71 @@ export function redrawGraphics({
   MARGIN,
   tileSimulation,
 }) {
-  if (activeIndex == 0) {
-    animatedLines.forEach((instance) => {
-      instance.path.attr("d", line(instance.data));
-      if (instance.text) {
-        const firstPoint = instance.data[0];
-        instance.text
-          .attr("x", walkX(-10 / RECT_ADJUSTMENT_FACTOR))
-          .attr("y", walkY(firstPoint.value - 1.5));
-      }
-    });
+  animatedLines.forEach((instance) => {
+    instance.path.attr("d", line(instance.data));
+    if (instance.text) {
+      const firstPoint = instance.data[0];
+      instance.text
+        .attr("x", walkX(-10 / RECT_ADJUSTMENT_FACTOR))
+        .attr("y", walkY(firstPoint.value - 1.5));
+    }
+  });
 
-    svg.selectAll("path.palestinian-line-path").each(function (d) {
-      d3.select(this).attr("d", line(d));
-    });
+  svg.selectAll("path.palestinian-line-path").each(function (d) {
+    d3.select(this).attr("d", line(d));
+  });
+
+  let israeliPath = svg.select(".israeli-line-path");
+  if (!israeliPath.empty()) {
+    const israeliData = israeliPath.datum();
+    israeliPath.attr("d", line(israeliData));
+
+    let israeliLabel = svg.select(".dubois-label-year");
+    if (!israeliLabel.empty() && israeliData && israeliData.length > 0) {
+      const firstIsraeliPoint = israeliData[0];
+      const baseXYear = walkX(firstIsraeliPoint.step);
+      israeliLabel
+        .attr("x", baseXYear + lineLabelOffset)
+        .attr("y", walkY(STEP_CONFIG.Y_START + 1.75));
+    }
   }
-  if (activeIndex == 2) {
-    let israeliPath = svg.select(".israeli-line-path");
-    if (!israeliPath.empty()) {
-      const israeliData = israeliPath.datum();
-      israeliPath.attr("d", line(israeliData));
+  let palestinianLabel = svg.select(".dubois-label-decade");
+  if (!palestinianLabel.empty() && palestinianPermits) {
+    const consolidatedPermits = palestinianPermits.reduce(
+      (sum, d) => sum + d.permits,
+      0
+    );
 
-      let israeliLabel = svg.select(".dubois-label-year");
-      if (!israeliLabel.empty() && israeliData && israeliData.length > 0) {
-        const firstIsraeliPoint = israeliData[0];
-        const baseXYear = walkX(firstIsraeliPoint.step);
-        israeliLabel
-          .attr("x", baseXYear + lineLabelOffset)
-          .attr("y", walkY(STEP_CONFIG.Y_START + 1.75));
-      }
-    }
-    let palestinianLabel = svg.select(".dubois-label-decade");
-    if (!palestinianLabel.empty() && palestinianPermits) {
-      const consolidatedPermits = palestinianPermits.reduce(
-        (sum, d) => sum + d.permits,
-        0
-      );
+    const consolidatedPathData = duBoisLine(
+      consolidatedPermits,
+      STEP_CONFIG.LENGTH,
+      CORE_Y_START,
+      STEP_CONFIG.Y_CHANGE,
+      false,
+      STEP_CONFIG.STEPS_UNTIL_TURN
+    );
 
-      const consolidatedPathData = duBoisLine(
-        consolidatedPermits,
-        STEP_CONFIG.LENGTH,
-        CORE_Y_START,
-        STEP_CONFIG.Y_CHANGE,
-        false,
-        STEP_CONFIG.STEPS_UNTIL_TURN
-      );
+    const firstPoint = consolidatedPathData[0];
+    console.log(`firstPoint.value: ${firstPoint.value}`);
 
-      const firstPoint = consolidatedPathData[0];
-      console.log(`firstPoint.value: ${firstPoint.value}`);
+    palestinianLabel
+      .attr("x", walkX(firstPoint.step) + lineLabelOffset)
+      .attr("y", walkY(firstPoint.value + 3));
 
-      palestinianLabel
-        .attr("x", walkX(firstPoint.step) + lineLabelOffset)
-        .attr("y", walkY(firstPoint.value + 3));
-
-      let index_counter = 0;
-      palestinianPermits.forEach((d) => {
-        svg
-          .select(`.palestinian-${d.year}-line-path`)
-          .transition()
-          .duration(0) // duration in milliseconds
-          .attr(
-            "d",
-            line(
-              consolidatedPathData.slice(
-                index_counter,
-                index_counter + d.permits
-              )
-            )
-          );
-        index_counter += d.permits - 1;
-      });
-    }
+    let index_counter = 0;
+    palestinianPermits.forEach((d) => {
+      svg
+        .select(`.palestinian-${d.year}-line-path`)
+        .transition()
+        .duration(0) // duration in milliseconds
+        .attr(
+          "d",
+          line(
+            consolidatedPathData.slice(index_counter, index_counter + d.permits)
+          )
+        );
+      index_counter += d.permits - 1;
+    });
   }
 
   if (activeIndex == 5) {
