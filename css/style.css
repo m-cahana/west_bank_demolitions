@@ -283,7 +283,9 @@ strong {
   font-style: italic;
   text-align: center;
   margin-bottom: 5px;
-  line-height: normal;
+  line-height: 1.2;
+  width: 100%;
+  display: block;
 }
 
 .subtitle {
@@ -291,7 +293,9 @@ strong {
   font-style: italic;
   text-align: center;
   margin-bottom: 5px;
-  line-height: normal;
+  line-height: 1.2;
+  width: 100%;
+  display: block;
 }
 
 .footer-title {
@@ -730,4 +734,10 @@ a[id^="footnotes-ref"] {
   position: relative;
   font-size: inherit;
   line-height: inherit;
+}
+
+/* Prevent step line-height from affecting titles */
+.step .title,
+.step .subtitle {
+  line-height: 1.2;
 }
