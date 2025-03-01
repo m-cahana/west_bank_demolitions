@@ -25,7 +25,7 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: rgba(0, 0, 0, 0);
+  background-color: #ffffff;
   font-family: "Helvetica";
   font-weight: 300;
   font-size: 14px;
@@ -35,8 +35,8 @@ body {
 
 #footer {
   border-top: solid;
-  padding-right: 10px;
-  padding-left: 10px;
+  padding-right: 20px;
+  padding-left: 50px;
   margin: 0 auto 0 auto;
   position: relative;
 }
@@ -195,7 +195,8 @@ svg circle:hover {
   fill: black;
   width: 100%;
   height: 100%;
-  white-space: pre-line; /* this respects newlines in your text */
+  white-space: pre-line;
+  line-height: 1.6;
 }
 
 /* Scrollable filler text in the bottom region */
@@ -209,6 +210,7 @@ svg circle:hover {
   font-weight: 300;
   color: black;
   padding: 0.25em;
+  line-height: 1.6;
 }
 
 strong {
@@ -282,6 +284,7 @@ strong {
   font-style: italic;
   text-align: center;
   margin-bottom: 5px;
+  line-height: normal;
 }
 
 .subtitle {
@@ -289,6 +292,7 @@ strong {
   font-style: italic;
   text-align: center;
   margin-bottom: 5px;
+  line-height: normal;
 }
 
 .footer-title {
@@ -297,6 +301,7 @@ strong {
   text-align: left;
   padding: 2.5px;
   margin-top: 5px;
+  margin-bottom: 2px;
 }
 
 .footer-attribution {
@@ -304,7 +309,7 @@ strong {
   font-style: italic;
   text-align: left;
   padding: 2.5px;
-  margin-top: 5px;
+  margin-top: 2px;
 }
 
 .nodes {
@@ -695,4 +700,20 @@ a:focus {
   .popup-caption {
     font-size: 6px;
   }
+}
+
+/* Base line height for main text content */
+.step p,
+.step:not(:has(.title)) {
+  /* Apply to paragraphs and steps without titles */
+  line-height: 1.6;
+}
+
+/* Ensure footnote links maintain consistent spacing */
+a[id^="footnotes-ref"] {
+  text-decoration: none;
+  vertical-align: baseline;
+  position: relative;
+  font-size: inherit;
+  line-height: inherit;
 }

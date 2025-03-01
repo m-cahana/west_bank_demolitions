@@ -13,7 +13,6 @@ let simulation, nodes;
 let map, mapSvg, mapContainer;
 let fastConsolidate = false;
 let israeliLineRedraw = true;
-let mapGenerate = true;
 let nodesOverlay;
 let animationController, animatedQueue;
 let animatedLines = [];
@@ -300,6 +299,27 @@ function drawInitial() {
   // Create a dedicated group for D3 nodes within the overlay SVG
   nodesOverlay = mapSvg.append("g").attr("class", "nodes-overlay");
 
+  // Initialize map once at the start
+  mapboxgl.accessToken =
+    "pk.eyJ1IjoibWljaGFlbC1jYWhhbmEiLCJhIjoiY202anoyYWs1MDB5NTJtcHdscXRpYWlmeSJ9.sKNNFh9wACNAHYN4ExzyWQ";
+
+  map = new mapboxgl.Map({
+    container: "map",
+    style: "mapbox://styles/mapbox/light-v11",
+    center: [35.1, 31.925],
+    zoom: 7,
+  });
+
+  map.addControl(new mapboxgl.NavigationControl());
+
+  d3.select("#map")
+    .append("div")
+    .attr("id", "date-display")
+    .style("position", "absolute")
+    .text(`Year: ${demolitionDates[0].getFullYear()}`);
+
+  hideMap();
+
   handleResize();
   window.addEventListener("resize", debounce(handleResize, 10));
 }
@@ -398,7 +418,6 @@ let activationFunctions = [
     removePermitLabels(svg);
     hideGrantedPermits(nodes, RECT);
     ({ map, animationController } = drawMap(
-      mapGenerate,
       map,
       svg,
       ADJ_WIDTH,
@@ -417,7 +436,6 @@ let activationFunctions = [
   },
   () => {
     animationController.pause();
-    mapGenerate = false;
     hideMap();
     renderHiddenMapNodes(nodes);
     stackNodes(

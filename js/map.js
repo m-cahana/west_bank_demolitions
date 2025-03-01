@@ -72,7 +72,6 @@ export const AnimationController = function (demolitionDates, nodes, RECT) {
 };
 
 export function drawMap(
-  mapGenerate,
   map,
   svg,
   ADJ_WIDTH,
@@ -91,60 +90,15 @@ export function drawMap(
     .attr("height", ADJ_HEIGHT)
     .style("width", `${ADJ_WIDTH}px`)
     .style("height", `${ADJ_HEIGHT}px`);
-  if (mapGenerate) {
-    // Set your Mapbox access token
-    mapboxgl.accessToken =
-      "pk.eyJ1IjoibWljaGFlbC1jYWhhbmEiLCJhIjoiY202anoyYWs1MDB5NTJtcHdscXRpYWlmeSJ9.sKNNFh9wACNAHYN4ExzyWQ";
 
-    // Initialize the Mapbox map
-    map = new mapboxgl.Map({
-      container: "map",
-      style: "mapbox://styles/mapbox/light-v11",
-      center: [35.1, 31.925], // [lng, lat]
-      zoom: 7,
-    });
+  map = new mapboxgl.Map({
+    container: "map",
+    style: "mapbox://styles/mapbox/light-v11",
+    center: [35.1, 31.925], // [lng, lat]
+    zoom: 7,
+  });
 
-    // Add zoom and rotation controls to the map.
-    map.addControl(new mapboxgl.NavigationControl());
-  } else {
-    d3.select("#map").selectAll(".mapboxgl-canvas").style("display", "block");
-
-    d3.select("#map").select("#date-display").style("display", "block");
-
-    d3.selectAll(
-      ".mapboxgl-ctrl-container, .mapboxgl-ctrl, .mapboxgl-control"
-    ).style("display", "block");
-
-    (async () => {
-      try {
-        // Await the completion of node transitions
-        await initiateNodeTransition(nodes, map, RECT, simulation);
-
-        adjustMapBounds();
-        // Start the animation after transitions are complete
-        animationController.start();
-      } catch (error) {
-        console.error("Error during node transition:", error);
-      }
-    })();
-  }
-
-  // Select existing 'date-display' or create it if it doesn't exist
-  let dateDisplay = d3.select("#map").select("#date-display");
-  if (dateDisplay.empty()) {
-    dateDisplay = d3
-      .select("#map")
-      .append("div")
-      .attr("id", "date-display")
-      .style("position", "absolute")
-      .text(`Year: ${demolitionDates[0].getFullYear()}`)
-      .style("display", "block");
-  } else {
-    // If it exists, ensure it's visible
-    dateDisplay
-      .text(`Year: ${demolitionDates[0].getFullYear()}`)
-      .style("display", "block");
-  }
+  showMap();
 
   function adjustMapBounds() {
     // calculate the bounding box
@@ -167,33 +121,38 @@ export function drawMap(
     });
   }
 
-  // Once the map loads, create an SVG overlay for D3 elements
   map.on("load", async () => {
-    try {
-      // Await the completion of node transitions
-      await initiateNodeTransition(nodes, map, RECT, simulation);
-
-      adjustMapBounds();
-
-      // Start the animation after transitions are complete
-      animationController.start();
-    } catch (error) {
-      console.error("Error during node transition:", error);
-    }
+    await initiateNodeTransition(nodes, map, RECT, simulation);
+    animationController.start();
   });
 
   return { map, animationController };
 }
 
 export function hideMap() {
-  // Select and hide only the map canvas(es)
+  // Select and hide map canvas(es)
   d3.select("#map").selectAll(".mapboxgl-canvas").style("display", "none");
 
+  // Hide date display
   d3.select("#map").select("#date-display").style("display", "none");
 
+  // Hide all Mapbox controls and branding
   d3.selectAll(
-    ".mapboxgl-ctrl-container, .mapboxgl-ctrl, .mapboxgl-control"
+    ".mapboxgl-ctrl-container, .mapboxgl-ctrl, .mapboxgl-control, .mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib"
   ).style("display", "none");
+}
+
+export function showMap() {
+  // Show map canvas(es)
+  d3.select("#map").selectAll(".mapboxgl-canvas").style("display", "block");
+
+  // Show date display
+  d3.select("#map").select("#date-display").style("display", "block");
+
+  // Show all Mapbox controls and branding
+  d3.selectAll(
+    ".mapboxgl-ctrl-container, .mapboxgl-ctrl, .mapboxgl-control, .mapboxgl-ctrl-logo, .mapboxgl-ctrl-attrib"
+  ).style("display", "block");
 }
 
 export function initiateNodeTransition(nodes, map, RECT, simulation) {
@@ -202,7 +161,14 @@ export function initiateNodeTransition(nodes, map, RECT, simulation) {
   // Reparent nodes to the map overlay
   const mapOverlay = d3.select("#map").select("svg.map-overlay");
   nodes.each(function () {
+    // Store current positions before moving to overlay
+    const node = d3.select(this);
+    const currentX = node.attr("x");
+    const currentY = node.attr("y");
+
+    // Move to overlay and preserve position
     mapOverlay.node().appendChild(this);
+    node.attr("x", currentX).attr("y", currentY);
   });
 
   function setNodePositions(selection, map) {
