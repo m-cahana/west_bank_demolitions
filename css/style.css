@@ -80,14 +80,13 @@ svg {
 .step {
   margin-bottom: 0px;
   min-height: 700px;
-  line-height: 1.4em;
+  line-height: 1.6;
   text-align: left;
   max-width: 700px;
   z-index: 101;
   position: relative;
   width: 90%;
   scroll-margin-top: 5vh;
-  /* Add this line */
   margin-left: auto;
   margin-right: auto;
 }
@@ -296,7 +295,7 @@ strong {
 }
 
 .footer-title {
-  font-size: 16px;
+  font-size: 18px;
   font-style: italic;
   text-align: left;
   padding: 2.5px;
@@ -323,26 +322,41 @@ strong {
   stroke-width: 8;
 }
 
+/* Base line height for all content */
+.step {
+  line-height: 1.6;
+}
+
+/* Footnote reference styling */
 [aria-describedby="footnote-label"] {
   counter-increment: footnotes;
   text-decoration: none;
   color: inherit;
   cursor: default;
   outline: none;
+  position: relative;
 }
 
 [aria-describedby="footnote-label"]::after {
   content: counter(footnotes);
-  vertical-align: super;
   font-size: 0.75em;
+  vertical-align: super;
   margin-left: 1px;
-  color: var(--palestinian);
+  color: var(--primary-blue);
   cursor: pointer;
+  line-height: 0;
+  position: relative;
+  top: -0.1em;
 }
 
-[aria-describedby="footnote-label"]:focus::after {
-  outline: thin dotted;
-  outline-offset: 2px;
+/* Ensure consistent line height */
+.step p,
+.step div,
+.step span,
+.step a {
+  line-height: inherit;
+  display: inline-block;
+  vertical-align: baseline;
 }
 
 [aria-label="Back to content"] {
