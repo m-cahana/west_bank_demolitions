@@ -343,10 +343,10 @@ strong {
 
 [aria-describedby="footnote-label"]::after {
   content: counter(footnotes);
-  font-size: 0.75em;
   vertical-align: super;
+  font-size: 0.75em;
   margin-left: 1px;
-  color: var(--primary-blue);
+  color: var(--palestinian);
   cursor: pointer;
   line-height: 0;
   position: relative;
