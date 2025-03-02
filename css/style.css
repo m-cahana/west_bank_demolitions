@@ -421,6 +421,8 @@ a:focus {
 
 .label-text {
   font-size: 14px;
+  font-family: "Helvetica";
+  font-weight: 300;
   fill: black;
   text-anchor: middle;
 }
