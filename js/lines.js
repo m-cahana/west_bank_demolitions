@@ -307,7 +307,7 @@ export function drawIsraeliLines(
         yearlyIsraeliPermits / speedImprovementFactor,
         STEP_CONFIG.LENGTH * speedImprovementFactor,
         STEP_CONFIG.Y_START - 1,
-        STEP_CONFIG.Y_CHANGE,
+        STEP_CONFIG.Y_CHANGE / 1.4,
         false,
         STEP_CONFIG.STEPS_UNTIL_TURN / speedImprovementFactor,
       ], // generatorParams: totalSteps, stepLength, initialY, yChange, Increment
@@ -327,7 +327,7 @@ export function drawIsraeliLines(
       .append("text")
       .attr("class", "dubois-label-year")
       .attr("x", baseXYear + lineLabelOffset)
-      .attr("y", walkY(STEP_CONFIG.Y_START + 1.75))
+      .attr("y", walkY(STEP_CONFIG.Y_START + 3.5))
       .attr("text-anchor", "start")
       .attr("fill", "black")
       .text(

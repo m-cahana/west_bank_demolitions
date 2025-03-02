@@ -213,7 +213,7 @@ export function redrawGraphics({
       const baseXYear = walkX(firstIsraeliPoint.step);
       israeliLabel
         .attr("x", baseXYear + lineLabelOffset)
-        .attr("y", walkY(STEP_CONFIG.Y_START + 1.75));
+        .attr("y", walkY(STEP_CONFIG.Y_START + 3.5));
     }
   }
   let palestinianLabel = svg.select(".dubois-label-decade");

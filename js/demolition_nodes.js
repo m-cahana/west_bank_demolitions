@@ -199,9 +199,6 @@ export function splitNodesLeftRight(
     Rejected: [walkX(BOUNDS.RIGHT), 99],
   };
 
-  console.log(`walkX(BOUNDS.LEFT): ${walkX(BOUNDS.LEFT)}`);
-  console.log(`walkX(BOUNDS.RIGHT): ${walkX(BOUNDS.RIGHT)}`);
-
   const permitNames = Object.keys(permitCategories);
 
   // **2. Update the force simulation**

@@ -42,7 +42,7 @@ const RECT = {
 let CORE_Y_START = 100;
 let STEP_CONFIG = {
   LENGTH: 1,
-  Y_CHANGE: 5,
+  Y_CHANGE: 8,
   Y_START: CORE_Y_START,
   get STEPS_UNTIL_TURN() {
     return 100 / this.LENGTH;
