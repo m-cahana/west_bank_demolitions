@@ -31,6 +31,7 @@ export const demolitionImages = {
      </li>
    </ol>
   `,
+  ],
   "al-Walajah": [
     "al_walajah_demolition.jpeg",
     "Alberto Pizzoli, Agence-France Press",
