@@ -438,14 +438,16 @@ a:focus {
   fill: black;
 }
 
-.dubois-label {
+.dubois-label,
+.dubois-label-year-annotation {
   font-size: 12px; /* Sets the font size */
   text-anchor: start; /* Centers the text horizontally */
   dominant-baseline: middle; /* Centers the text vertically */
 }
 
 .dubois-label-decade,
-.dubois-label-year {
+.dubois-label-year,
+.dubois-label-year-by-year {
   font-size: 12px; /* Sets the font size */
   text-anchor: start; /* Centers the text horizontally */
   dominant-baseline: middle; /* Centers the text vertically */
@@ -650,8 +652,10 @@ a:focus {
   }
 
   .dubois-label,
+  .dubois-label-year-annotation,
   .dubois-label-decade,
-  .dubois-label-year {
+  .dubois-label-year,
+  .dubois-label-year-by-year {
     font-size: 10px !important;
   }
 

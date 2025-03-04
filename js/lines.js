@@ -51,6 +51,7 @@ export class AnimatedLine {
     lineGenerator,
     labelText = null,
     RECT_ADJUSTMENT_FACTOR,
+    yearText = null,
     animationSpeed = 5,
     strokeWidth = 3
   ) {
@@ -67,14 +68,18 @@ export class AnimatedLine {
     this.walkX = walkX;
     this.walkY = walkY;
     this.labelText = labelText;
+    this.yearText = yearText;
     this.animationSpeed = animationSpeed;
 
     this.text = null;
+    this.annotation = null;
     this.timeoutId = null;
+
+    const firstPoint = this.generatorData[this.currentIndex];
+    const lastPoint = this.generatorData[this.generatorData.length - 1];
 
     // If labelText is provided, initialize with the first point.
     if (this.labelText && this.generatorData.length > 0) {
-      const firstPoint = this.generatorData[this.currentIndex];
       this.data.push(firstPoint);
       this.path.datum(this.data).attr("d", this.lineGenerator(this.data));
       this.currentIndex++;
@@ -91,6 +96,16 @@ export class AnimatedLine {
     }
 
     this.animate();
+
+    if (this.yearText) {
+      this.annotation = lineGroup
+        .append("text")
+        .attr("class", "dubois-label-year-annotation")
+        .attr("x", walkX(lastPoint.step + 2))
+        .attr("y", walkY(firstPoint.value - 1.5))
+        .attr("dy", "-0.5em")
+        .text(this.yearText);
+    }
   }
 
   animate() {
@@ -174,6 +189,7 @@ export function consolidatePalestinianLines(
 
     // Remove prior labels
     svg.selectAll(".dubois-label").attr("display", "none");
+    svg.selectAll(".dubois-label-year-annotation").attr("display", "none");
 
     const firstPoint = consolidatedPathData[0];
     console.log(`firstPoint.value: ${firstPoint.value}`);
@@ -245,11 +261,12 @@ export function unconsolidatePalestinianLines(
   // show prior labels, remove aggregate
   svg.selectAll(".dubois-label").attr("display", "block");
   svg.selectAll(".dubois-label-decade").attr("display", "none");
+  svg.selectAll(".dubois-label-year-annotation").attr("display", "block");
 
   palestinianPermits.forEach((d) => {
     const pathData = duBoisLine(
       ...[
-        d.permits,
+        d.permits + 1,
         STEP_CONFIG.LENGTH,
         STEP_CONFIG.Y_START,
         STEP_CONFIG.Y_CHANGE,

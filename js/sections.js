@@ -243,7 +243,8 @@ function drawInitial() {
       `palestinian-${d.year}-line-path`,
       "black",
       [
-        d.permits,
+        // add one extra step to account for 1-permit years
+        d.permits + 1,
         STEP_CONFIG.LENGTH,
         STEP_CONFIG.Y_START,
         STEP_CONFIG.Y_CHANGE,
@@ -320,7 +321,6 @@ function drawInitial() {
 
   hideMap();
 
-  handleResize();
   window.addEventListener("resize", debounce(handleResize, 10));
 }
 
@@ -469,18 +469,39 @@ let activationFunctions = [
 let scroll = scroller().container(d3.select("#graphic"));
 scroll();
 
-scroll.on("active", function (index) {
-  activeIndex = index;
+// Add flags for processing control
+let isProcessing = false;
+let currentProcessingPromise = null;
 
+scroll.on("active", function (index) {
+  // Cancel any current processing
+  if (currentProcessingPromise) {
+    currentProcessingPromise.cancel = true;
+  }
+
+  activeIndex = index;
   console.log(`activeIndex: ${activeIndex}`);
 
   let sign = activeIndex - lastIndex < 0 ? -1 : 1;
   let scrolledSections = d3.range(lastIndex + sign, activeIndex + sign, sign);
 
-  scrolledSections.forEach((i) => {
-    activationFunctions[i]();
-  });
-  lastIndex = activeIndex;
+  // Create new processing promise
+  currentProcessingPromise = { cancel: false };
+
+  // Process each section change sequentially, but allow for interruption
+  const processSequentially = async () => {
+    for (let i of scrolledSections) {
+      if (currentProcessingPromise.cancel) {
+        break;
+      }
+      activationFunctions[i]();
+      await new Promise((resolve) => setTimeout(resolve, 100));
+    }
+    lastIndex = activeIndex;
+    isProcessing = false;
+  };
+
+  processSequentially();
 });
 
 // Reload on top of page

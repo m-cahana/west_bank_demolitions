@@ -10,7 +10,7 @@ export function getPalestinianPermits() {
     data.forEach((d) => {
       d.year = Number(d.year);
       // 1 permit buffer to handle 1-permit length entries
-      d.permits = Number(d.permits) + 1;
+      d.permits = Number(d.permits);
     });
 
     const palestinianPermits = data.filter(

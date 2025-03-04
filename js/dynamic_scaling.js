@@ -192,9 +192,15 @@ export function redrawGraphics({
     instance.path.attr("d", line(instance.data));
     if (instance.text) {
       const firstPoint = instance.data[0];
+      const lastPoint = instance.data[instance.data.length - 1];
       instance.text
         .attr("x", walkX(-10 / RECT_ADJUSTMENT_FACTOR))
         .attr("y", walkY(firstPoint.value - 1.5));
+      if (instance.annotation) {
+        instance.annotation
+          .attr("x", walkX(lastPoint.step + 2))
+          .attr("y", walkY(firstPoint.value - 1.5));
+      }
     }
   });
 
@@ -233,7 +239,6 @@ export function redrawGraphics({
     );
 
     const firstPoint = consolidatedPathData[0];
-    console.log(`firstPoint.value: ${firstPoint.value}`);
 
     palestinianLabel
       .attr("x", walkX(firstPoint.step) + lineLabelOffset)
