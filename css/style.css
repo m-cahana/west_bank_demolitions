@@ -25,7 +25,7 @@
 body {
   margin: 0;
   padding: 0;
-  background-color: #ffffff;
+  background-color: #fafafa;
   font-family: "Helvetica";
   font-weight: 300;
   font-size: 14px;
@@ -101,7 +101,7 @@ svg {
 
 .step.ghost {
   position: relative;
-  background-color: #ffffff;
+  background-color: #f5f5f5;
   opacity: 0;
   z-index: -1;
 }
@@ -116,7 +116,7 @@ svg {
 
 .tooltip {
   position: absolute;
-  background-color: white;
+  background-color: #f5f5f5;
   border: 0.5px solid black;
   padding: 5px;
   pointer-events: all;
@@ -124,6 +124,10 @@ svg {
   transition: opacity 0.3s ease; /* smooth fade-in and fade-out */
   z-index: 99; /* ensure tooltip appears above other elements */
   font-size: 12px;
+}
+
+.permit-label {
+  background-color: #f5f5f5;
 }
 
 .tooltip.visible {
@@ -220,7 +224,7 @@ strong {
   position: absolute;
   top: 10px;
   left: 10px;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: #f5f5f5;
   padding: 5px 12px;
   font-size: 14px;
   color: #333;
@@ -232,7 +236,7 @@ strong {
   position: absolute;
   top: 10px;
   left: 150px;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: #f5f5f5;
   padding: 5px 10px;
   border-radius: 4px;
   font-size: 14px;
@@ -245,7 +249,7 @@ strong {
   padding: 0px 0px;
   border: 1px solid #ccc;
   border-radius: 4px;
-  background-color: rgba(255, 255, 255, 0.8);
+  background-color: #f5f5f5;
   cursor: pointer;
   position: relative;
   z-index: 2;
@@ -289,7 +293,7 @@ strong {
 }
 
 .subtitle {
-  font-size: 12px;
+  font-size: 14px;
   font-style: italic;
   text-align: center;
   margin-bottom: 5px;
@@ -536,7 +540,7 @@ a:focus {
     text-align: center; /* center the text content */
     border-width: 1px;
     border-style: solid;
-    background-color: rgba(255, 255, 255, 0.9);
+    background-color: #f5f5f5;
     border-radius: 0px;
     padding: 20px;
   }
