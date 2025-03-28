@@ -88,7 +88,7 @@ export class AnimatedLine {
       this.text = lineGroup
         .append("text")
         .attr("class", "dubois-label")
-        .attr("x", walkX(-10 / RECT_ADJUSTMENT_FACTOR))
+        .attr("x", walkX(-12 / RECT_ADJUSTMENT_FACTOR))
         .attr("y", walkY(firstPoint.value - 1.5))
         .attr("dy", "-0.5em")
         .attr("fill", color)

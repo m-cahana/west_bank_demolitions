@@ -28,7 +28,7 @@ body {
   background-color: #fafafa;
   font-family: "Helvetica";
   font-weight: 300;
-  font-size: 14px;
+  font-size: 16px;
   overflow-x: hidden;
   counter-reset: footnotes;
 }
@@ -39,6 +39,7 @@ body {
   padding-left: 50px;
   margin: 0 auto 0 auto;
   position: relative;
+  font-size: 14px;
 }
 
 .methodology-text {
@@ -424,7 +425,7 @@ a:focus {
 }
 
 .label-text {
-  font-size: 14px;
+  font-size: 16px;
   font-family: "Helvetica";
   font-weight: 300;
   fill: black;
@@ -444,7 +445,7 @@ a:focus {
 
 .dubois-label,
 .dubois-label-year-annotation {
-  font-size: 12px; /* Sets the font size */
+  font-size: 14px; /* Sets the font size */
   text-anchor: start; /* Centers the text horizontally */
   dominant-baseline: middle; /* Centers the text vertically */
 }
@@ -452,7 +453,7 @@ a:focus {
 .dubois-label-decade,
 .dubois-label-year,
 .dubois-label-year-by-year {
-  font-size: 12px; /* Sets the font size */
+  font-size: 14px; /* Sets the font size */
   text-anchor: start; /* Centers the text horizontally */
   dominant-baseline: middle; /* Centers the text vertically */
 }
@@ -660,7 +661,7 @@ a:focus {
   .dubois-label-decade,
   .dubois-label-year,
   .dubois-label-year-by-year {
-    font-size: 10px !important;
+    font-size: 13px !important;
   }
 
   .popup-caption {
@@ -700,6 +701,14 @@ a:focus {
   .popup-filler > div {
     font-size: 10px;
   }
+
+  .dubois-label,
+  .dubois-label-year-annotation,
+  .dubois-label-decade,
+  .dubois-label-year,
+  .dubois-label-year-by-year {
+    font-size: 12px !important;
+  }
 }
 
 /* even smaller  */
@@ -720,6 +729,10 @@ a:focus {
   /* Caption text styling */
   .popup-caption {
     font-size: 8px;
+  }
+
+  body {
+    font-size: 14px;
   }
 }
 
