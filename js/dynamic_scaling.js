@@ -194,7 +194,7 @@ export function redrawGraphics({
       const firstPoint = instance.data[0];
       const lastPoint = instance.data[instance.data.length - 1];
       instance.text
-        .attr("x", walkX(-10 / RECT_ADJUSTMENT_FACTOR))
+        .attr("x", walkX(-12 / RECT_ADJUSTMENT_FACTOR))
         .attr("y", walkY(firstPoint.value - 1.5));
       if (instance.annotation) {
         instance.annotation
