@@ -544,6 +544,7 @@ a:focus {
     background-color: #f5f5f5;
     border-radius: 0px;
     padding: 20px;
+    opacity: 0.9;
   }
 
   .step.ghost.mobile {
